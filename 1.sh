@@ -1,0 +1,11 @@
+bash ./scripts/ETTh2.sh
+bash ./scripts/ETTm1.sh
+bash ./scripts/ETTm2.sh
+bash ./scripts/electricity.sh
+bash ./scripts/traffic.sh
+bash ./scripts/Weather.sh
+bash ./scripts/Solar.sh
+bash ./scripts/PEMS03.sh
+bash ./scripts/PEMS04.sh
+bash ./scripts/PEMS07.sh
+bash ./scripts/PEMS08.sh

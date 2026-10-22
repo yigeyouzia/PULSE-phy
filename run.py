@@ -15,7 +15,8 @@ def set_seed(seed: int = 2024):
 
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    torch.use_deterministic_algorithms(True, warn_only=True)
+    # torch.use_deterministic_algorithms(True, warn_only=True)
+    torch.use_deterministic_algorithms(True)
 
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 parser = argparse.ArgumentParser(description='Model family for Time Series Forecasting')
