@@ -247,7 +247,7 @@ $$
 data_provider/data_loader_gjemnessund.py  # 读取 H5、训练 scaler、窗口索引与缓存
 data_provider/data_factory.py        # 注册 Gjemnessund
 utils/gje_timefeatures.py            # 显式支持 0.5 秒与分数秒
-scripts/Gjemnessund.sh               # 数据配置与四个独立 horizon
+scripts/Gjemnessund.sh               # 共用数据/模型配置，顺序运行四个 horizon
 tests/test_gjemnessund.py            # 切分、标准化、边界、旧分支与原模型接口检查
 ```
 
@@ -415,7 +415,7 @@ PULSE-phy/
 ├── all_datasets/
 │   └── gjemnessund.h5
 └── scripts/
-    └── Gjemnessund.sh
+    └── Gjemnessund.sh                 # 720 → 96/192/336/720，依次执行
 ```
 
 从项目根目录，在已有可用 PyTorch 环境中安装补充依赖并运行：
@@ -425,7 +425,17 @@ python -m pip install -r requirements-gje.txt
 bash scripts/Gjemnessund.sh
 ```
 
-脚本仅运行 `720 → 96`、10 通道、batch 16、最多 30 epochs 的原版 PULSE；控制台和 `logs/Gjemnessund/Gjemnessund_720_96.log` 同时输出。下一次运行该脚本会覆盖同名文本日志，重要结果请先归档。其余 horizon 可在跑通后分别配置；尚未完成 Gje 超参数选优。
+脚本固定输入 720 点，依次执行 `720 → 96`、`720 → 192`、`720 → 336`、`720 → 720`；每组都是 10 通道、batch 16、最多 30 epochs 的原版 PULSE，完成训练及最终测试后才启动下一组。四组共用一个完整参数命令，只有 `pred_len`、`model_id` 和日志文件名随循环变化。
+
+控制台和 `logs/Gjemnessund/Gjemnessund_720_<H>.log` 同时输出，每组日志独立；统一每 100 个 batch 打印一次。下一次运行会覆盖同名文本日志，重要结果请先归档。脚本使用 `set -euo pipefail`，任一训练、测试或日志写入命令失败后停止，不继续后面的长度。
+
+只需运行部分长度时，修改脚本中的列表，例如跳过已完成的 96：
+
+```bash
+for pred_len in 192 336 720; do
+```
+
+其他参数沿用 96 起跑配置，包括 `inv_len=96, cycle_len=96, patch_size=24, batch_size=16`；这些值尚未针对各长度选优。原来三个按长度拆分的脚本已移除，统一使用 `scripts/Gjemnessund.sh`。
 
 首次运行逐记录解析 H5、检查全部数值有限和 0.5 秒时间网格，仅用训练行拟合 scaler；数值缓存约 0.4 GiB，后续训练/验证/测试及其他 horizon 共用。缓存缺失会自动重建；不必从 macOS 复制缓存。读取使用 `h5py`，不需要 PyTables，日期块不执行 pickle 反序列化。
 

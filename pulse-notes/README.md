@@ -18,3 +18,13 @@
 - Gje 图片存于 [images/](images/)，原样复制 / 提取自已存在的 notebook 和附件，详细出处见 [图片来源](images/README.md)。
 
 原版 PULSE 已接入 Gje，入口仍为 `run.py`。将文件放到 `all_datasets/gjemnessund.h5` 后，执行 `bash scripts/Gjemnessund.sh`。详见计划文档第 9 节；HMSFormer 对齐与正式指标比较尚未运行。
+
+Gje 的四个预测长度已合并到 [Gjemnessund.sh](../scripts/Gjemnessund.sh)。从项目根目录执行：
+
+```bash
+bash scripts/Gjemnessund.sh
+```
+
+脚本固定输入 720 点，按 `96 → 192 → 336 → 720` 的顺序逐个训练和测试，每组使用独立的 `model_id` 和日志文件，统一每 100 个 batch 打印一次。任一组报错会停止后续实验。只需部分长度时，修改脚本中的 `for pred_len in 96 192 336 720` 列表。
+
+训练与数据参数沿用 96 起跑配置，尚未针对各 horizon 选优。日志位于 `logs/Gjemnessund/Gjemnessund_720_<H>.log`；再次运行会覆盖同名文本日志，重要结果请先归档。
