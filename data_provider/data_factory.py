@@ -14,6 +14,21 @@ data_dict = {
 
 
 def data_provider(args, flag):
+    if args.data == 'Gjemnessund':
+        # Lazy import keeps h5py optional for every pre-existing dataset.
+        from data_provider.data_loader_gjemnessund import Dataset_Gjemnessund
+        data_set = Dataset_Gjemnessund(
+            root_path=args.root_path, data_path=args.data_path, flag=flag,
+            size=[args.seq_len, args.label_len, args.pred_len],
+            features=args.features, time_dim=args.time_dim,
+            window_stride=args.gje_window_stride, cycle_len=args.gje_cycle_len,
+            cache_dir=args.gje_cache_dir, record_limit=args.gje_record_limit)
+        data_loader = DataLoader(
+            data_set, batch_size=args.batch_size, shuffle=flag == 'train',
+            num_workers=args.num_workers, drop_last=flag == 'train')
+        if not len(data_loader):
+            raise ValueError('Gje loader has no batches; reduce batch_size.')
+        return data_set, data_loader
     Data = data_dict[args.data]
     timeenc = 0 if args.embed != 'timeF' else 1
 

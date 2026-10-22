@@ -41,6 +41,18 @@ parser.add_argument('--freq', type=str, default='h',
                     help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
 
+# Gje-only adapter options; defaults for all existing datasets are unchanged.
+parser.add_argument('--gje_window_stride', type=int, default=16)
+parser.add_argument('--gje_cycle_len', type=int, default=96,
+                    help='Technical phase-reference period in samples; not an identified bridge period')
+parser.add_argument('--gje_cache_dir', type=str, default=None,
+                    help='Default: .gje_cache next to the H5 file')
+parser.add_argument('--gje_record_limit', type=int, default=0,
+                    help='Debug only: use first N records; 0 uses all')
+parser.add_argument('--gje_max_batches', type=int, default=0,
+                    help='Debug only: cap each train/val/test loop; 0 is a full run')
+parser.add_argument('--gje_log_interval', type=int, default=10)
+
 # forecasting task
 parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
 parser.add_argument('--label_len', type=int, default=0, help='start token length')  #fixed
@@ -129,6 +141,36 @@ parser.add_argument('--test_flop', action='store_true', default=False, help='See
 
 args = parser.parse_args()
 
+if args.data == 'Gjemnessund':
+    if args.model != 'PULSE' or args.features != 'M' or args.enc_in != 10:
+        parser.error('Initial Gje adapter requires --model PULSE --features M --enc_in 10')
+    if args.time_dim != 6 or args.label_len != 0:
+        parser.error('Gje requires --time_dim 6 --label_len 0')
+    if args.use_amp or args.do_predict or args.use_multi_gpu:
+        parser.error('Initial Gje path supports non-AMP single-device train/test only')
+    if args.seq_len < 2 or args.pred_len < 1 or args.patch_size < 1 or args.inv_len < 1:
+        parser.error('Invalid Gje sequence/model lengths')
+    if args.seq_len % args.patch_size or args.pred_len % args.patch_size:
+        parser.error('PULSE patch_size must divide both seq_len and pred_len')
+    if args.dsa < 1 or args.dsb < 1 or min(args.enc_in // args.dsa, args.enc_in // args.dsb) < 1:
+        parser.error('dsa/dsb would create an empty TimeEncoder feature dimension')
+    if min(args.gje_record_limit, args.gje_max_batches) < 0 or min(args.gje_window_stride, args.gje_cycle_len, args.gje_log_interval) < 1:
+        parser.error('Invalid Gje adapter/debug arguments')
+
+
+def gje_setting(setting):
+    if args.data != 'Gjemnessund':
+        return setting
+    import hashlib
+    import json
+    # Test-only flags/device/log settings are excluded, so --is_training 0
+    # addresses the same checkpoint. All behavioral training/data args remain.
+    ignored = {'is_training', 'use_gpu', 'gpu', 'use_multi_gpu', 'devices',
+               'device_ids', 'num_workers', 'gje_log_interval', 'test_flop', 'do_predict'}
+    config = {k: v for k, v in vars(args).items() if k not in ignored}
+    digest = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
+    return setting + '_gje_' + digest
+
 # random seed
 fix_seed = args.random_seed
 
@@ -166,6 +208,7 @@ if __name__ == '__main__':
                 ii
             )
 
+            setting = gje_setting(setting)
             exp = Exp(args)  # set experiments
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
             exp.train(setting)
@@ -196,6 +239,7 @@ if __name__ == '__main__':
             ii
         )
 
+        setting = gje_setting(setting)
         exp = Exp(args)  # set experiments
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
         exp.test(setting, test=1)

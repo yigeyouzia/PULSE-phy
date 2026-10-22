@@ -13,6 +13,10 @@ from torch.optim import lr_scheduler
 
 import os
 import time
+import json
+import hashlib
+import sys
+from pathlib import Path
 
 import warnings
 import numpy as np
@@ -70,9 +74,12 @@ class Exp_Main(Exp_Basic):
 
     def vali(self, vali_data, vali_loader, criterion):
         total_loss = []
+        weighted_sum, weighted_count = 0.0, 0
         self.model.eval()
         with torch.no_grad():
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark,cycle_index) in enumerate(vali_loader):
+                if self._gje_batch_limit(i):
+                    break
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float()
 
@@ -118,7 +125,10 @@ class Exp_Main(Exp_Basic):
                 loss = criterion(pred, true)
 
                 total_loss.append(loss)
-        total_loss = np.average(total_loss)
+                if getattr(vali_data, 'weighted_evaluation', False):
+                    weighted_sum += loss.item() * pred.numel()
+                    weighted_count += pred.numel()
+        total_loss = weighted_sum / weighted_count if weighted_count else np.average(total_loss)
         self.model.train()
         return total_loss
 
@@ -131,6 +141,9 @@ class Exp_Main(Exp_Basic):
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
             os.makedirs(path)
+
+        if self.args.data == 'Gjemnessund':
+            self._save_gje_protocol(path, (train_data, vali_data, test_data))
 
         time_now = time.time()
 
@@ -154,8 +167,12 @@ class Exp_Main(Exp_Basic):
             train_loss = []
 
             self.model.train()
+            if self.args.data == 'Gjemnessund':
+                print('Effective epoch learning rate:', model_optim.param_groups[0]['lr'], flush=True)
             epoch_time = time.time()
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, cycle_index) in enumerate(train_loader):
+                if self._gje_batch_limit(i):
+                    break
                 iter_count += 1
                 model_optim.zero_grad()
                 batch_x = batch_x.float().to(self.device)
@@ -215,7 +232,7 @@ class Exp_Main(Exp_Basic):
                         loss_rec = criterion(outputs, batch_y)
 
                         loss += self.args.rec_lambda * loss_rec
-                        if (i + 1) % 100 == 0:
+                        if (i + 1) % (self.args.gje_log_interval if self.args.data == 'Gjemnessund' else 100) == 0:
                             print(f"\tloss_rec: {loss_rec.item()}")
 
 
@@ -235,13 +252,13 @@ class Exp_Main(Exp_Basic):
                             raise NotImplementedError
 
                         loss += self.args.auxi_lambda * loss_auxi
-                        if (i + 1) % 100 == 0:
+                        if (i + 1) % (self.args.gje_log_interval if self.args.data == 'Gjemnessund' else 100) == 0:
                             print(f"\tloss_auxi: {loss_auxi.item()}")
 
 
                     train_loss.append(loss.item())
 
-                if (i + 1) % 100 == 0:
+                if (i + 1) % (self.args.gje_log_interval if self.args.data == 'Gjemnessund' else 100) == 0:
                     print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
                     speed = (time.time() - time_now) / iter_count
                     left_time = speed * ((self.args.train_epochs - epoch) * train_steps - i)
@@ -265,10 +282,13 @@ class Exp_Main(Exp_Basic):
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
-            test_loss = self.vali(test_data, test_loader, criterion)
-
-            print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
-                epoch + 1, train_steps, train_loss, vali_loss, test_loss))
+            if self.args.data == 'Gjemnessund':
+                print("Epoch: {} | Train Loss: {:.7f} Vali Loss: {:.7f}".format(
+                    epoch + 1, train_loss, vali_loss), flush=True)
+            else:
+                test_loss = self.vali(test_data, test_loader, criterion)
+                print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
+                    epoch + 1, train_steps, train_loss, vali_loss, test_loss))
             early_stopping(vali_loss, self.model, path)
             if early_stopping.early_stop:
                 print("Early stopping")
@@ -280,7 +300,10 @@ class Exp_Main(Exp_Basic):
                 print('Updating learning rate to {}'.format(scheduler.get_last_lr()[0]))
 
         best_model_path = path + '/' + 'checkpoint.pth'
-        self.model.load_state_dict(torch.load(best_model_path, map_location=lambda storage, loc: storage.cuda(self.args.gpu)))
+        if self.args.data == 'Gjemnessund':
+            self.model.load_state_dict(torch.load(best_model_path, map_location=self.device))
+        else:
+            self.model.load_state_dict(torch.load(best_model_path, map_location=lambda storage, loc: storage.cuda(self.args.gpu)))
 
         # print(f"Max Memory (MB): {max_memory}")
 
@@ -288,6 +311,8 @@ class Exp_Main(Exp_Basic):
 
     def test(self, setting, test=0):
         test_data, test_loader = self._get_data(flag='test')
+        if self.args.data == 'Gjemnessund':
+            return self._test_gjemnessund(setting, test_data, test_loader, test)
 
         if test:
             print('loading model')
@@ -446,3 +471,81 @@ class Exp_Main(Exp_Basic):
         np.save(folder_path + 'real_prediction.npy', preds)
 
         return
+    def _gje_batch_limit(self, index):
+        return (self.args.data == 'Gjemnessund' and self.args.gje_max_batches > 0
+                and index >= self.args.gje_max_batches)
+
+    def _save_gje_protocol(self, path, datasets):
+        for dataset in datasets:
+            dataset.export_protocol(path)
+        info = dict(args=vars(self.args), python=sys.version, torch=torch.__version__,
+                    numpy=np.__version__, device=str(self.device),
+                    model_sha256=hashlib.sha256(Path('models/PULSE.py').read_bytes()).hexdigest(),
+                    debug=bool(self.args.gje_record_limit or self.args.gje_max_batches),
+                    loss='Original non-AMP SAM target mixing + configured rec/FFT loss',
+                    scheduler='Original OneCycleLR construction + original lradj behavior',
+                    test_policy='No test-set evaluation/selection during training')
+        (Path(path) / 'gje_run.json').write_text(json.dumps(info, indent=2), encoding='utf-8')
+
+    def _test_gjemnessund(self, setting, data, loader, load):
+        path = Path(self.args.checkpoints) / setting
+        protocol_file = path / 'gje_data_protocol.json'
+        if not protocol_file.is_file():
+            raise FileNotFoundError('Missing training protocol: ' + str(protocol_file))
+        saved = json.loads(protocol_file.read_text(encoding='utf-8'))
+        if saved != data.info:
+            raise ValueError('Gje test data/scaler differs from the saved training protocol.')
+        if load:
+            self.model.load_state_dict(torch.load(str(path / 'checkpoint.pth'), map_location=self.device))
+        self.model.eval()
+        squared = np.zeros(10, dtype=np.float64)
+        absolute = np.zeros(10, dtype=np.float64)
+        record_squared = np.zeros((len(data.records), 10), dtype=np.float64)
+        record_absolute = np.zeros_like(record_squared)
+        record_count = np.zeros(len(data.records), dtype=np.int64)
+        count, cursor = 0, 0
+        started = time.time()
+        with torch.no_grad():
+            for i, (x, y, xm, ym, cycle) in enumerate(loader):
+                if self._gje_batch_limit(i):
+                    break
+                x, xm, ym = (a.float().to(self.device) for a in (x, xm, ym))
+                pred = self.model(x, cycle.int().to(self.device), xm, ym)
+                error = pred.cpu().numpy().astype(np.float64) - y.numpy().astype(np.float64)
+                if not np.isfinite(error).all():
+                    raise ValueError('Non-finite Gje predictions; no metrics saved.')
+                batch_sq = np.square(error).sum(axis=1)
+                batch_abs = np.abs(error).sum(axis=1)
+                squared += batch_sq.sum(axis=0)
+                absolute += batch_abs.sum(axis=0)
+                ids = data.windows[cursor:cursor + len(error), 0]
+                np.add.at(record_squared, ids, batch_sq)
+                np.add.at(record_absolute, ids, batch_abs)
+                np.add.at(record_count, ids, error.shape[1])
+                cursor += len(error)
+                count += len(error) * error.shape[1]
+        used = record_count > 0
+        per_mse, per_mae = squared / count, absolute / count
+        macro_mse = (record_squared[used] / record_count[used, None]).mean(axis=0)
+        macro_mae = (record_absolute[used] / record_count[used, None]).mean(axis=0)
+        report = dict(mse=float(per_mse.mean()), mae=float(per_mae.mean()),
+                      acceleration_mse=float(per_mse[:6].mean()),
+                      acceleration_mae=float(per_mae[:6].mean()),
+                      wind_mse=float(per_mse[6:].mean()), wind_mae=float(per_mae[6:].mean()),
+                      macro_record_mse=float(macro_mse.mean()), macro_record_mae=float(macro_mae.mean()),
+                      per_channel={c: dict(mse=float(per_mse[j]), mae=float(per_mae[j]))
+                                   for j, c in enumerate(data.columns)},
+                      evaluated_windows=cursor, evaluated_records=int(used.sum()),
+                      elapsed_seconds=time.time() - started,
+                      debug=bool(self.args.gje_record_limit or self.args.gje_max_batches),
+                      metric_scale='shared train StandardScaler coordinates, after PULSE denorm',
+                      angle_note='Raw angle retained for M10 alignment; Euclidean error has circular-boundary limitations')
+        out = Path('results') / setting
+        out.mkdir(parents=True, exist_ok=True)
+        (out / 'gje_metrics.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+        data.export_protocol(out)
+        print('mse:{}, mae:{} | Acc6 mse:{}, mae:{}'.format(
+            report['mse'], report['mae'], report['acceleration_mse'], report['acceleration_mae']), flush=True)
+        with open('result.txt', 'a') as f:
+            f.write(setting + '\n' + json.dumps(report) + '\n\n')
+        return report
