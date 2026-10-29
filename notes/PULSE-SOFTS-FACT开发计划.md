@@ -100,8 +100,10 @@ $$
 | `PULSE-phy/models/PULSE_SOFTS.py` | 已新增 | 不含 FACT 的骨干替换对照 |
 | `PULSE-phy/models/PULSE_SCF_SIMPLE.py` | 已新增 | 对变量表示直接接入 FACT 增量的对照 |
 | `PULSE-phy/layers/pulse_scf/` | 已新增 | 来源模块副本、独立配置、SCF 扩展、条件连接与 backbone |
+| `PULSE-phy/layers/pulse_scf/deterministic.py` | 已新增 | 等价的核心选择与循环补齐，避免索引反向的 scatter／index-add 路径 |
 | `PULSE-phy/scripts/PULSE_SCF/` | 已新增 | 保持原数据集脚本名和配置格式，复用原训练入口 |
 | `PULSE-phy/tests/test_pulse_scf.py` | 已新增 | 接口、梯度、训练配对、保存恢复及脚本检查 |
+| `PULSE-phy/tests/test_scf_deterministic.py` | 已新增 | 严格确定性下的等价性与训练步检查，CUDA 可用时执行 GPU 项 |
 | `PULSE-phy/exp/exp_main.py` | 已增加 4 行 | 1 行导入、3 个注册项；既有训练与评价逻辑保持原样 |
 | `PULSE-phy/run.py` | 未修改 | 新 CLI 参数接入如需实施，仍须额外确认 |
 | `PULSE-phy/requirements-scf.txt` | 已新增 | 引用原 requirements，补充原入口启动需要的 `einops` |
@@ -247,6 +249,7 @@ PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/Weather.sh
 | 日期 | 配置或阶段 | 现象与复现步骤 | 原因证据 | 处理与命名 | 复查结果 |
 | --- | --- | --- | --- | --- | --- |
 | 待填写 | 待填写 | 待填写 | 待分析 | 待处理 | 待复查 |
+| 2026-10-29 | PULSE_SCF，ETTh1 96→96，batch 256，首次 backward | `scatter_add_cuda_kernel` 不支持当前 CUDA 环境的严格确定性 | STAR 的 gather 反向调用 scatter_add；算子跟踪及框架源码核对 | 新增等价掩码选择及前缀补齐函数，保持入口确定性设置 | CPU 等价与训练步通过，服务器 CUDA 待重跑 |
 
 ## 9. 结果分析与论文主张预留
 
@@ -273,6 +276,7 @@ PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/Weather.sh
 | 2026-10-29 | 当前只推进 ETTh1 与 Weather | 用户明确暂不需要大桥数据内容，不安排相关适配、脚本和实验 |
 | 2026-10-29 | 笔记迁入主开发仓库 | 当前统一位置为 `PULSE-phy/notes/`，已同步根目录约束和相对链接 |
 | 2026-10-29 | 补充专属依赖清单 | 原基础清单漏列入口间接导入的 `einops`，新增 `requirements-scf.txt`，不修改原清单 |
+| 2026-10-29 | 修复 SCF 索引反向的严格确定性兼容 | 保留采样和模型参数，原 `run.py` 与来源副本不变；CPU 检查通过，目标 CUDA 环境待验证 |
 
 ## 11. 研究背景入口
 

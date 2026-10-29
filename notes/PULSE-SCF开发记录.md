@@ -198,3 +198,34 @@ SciPy 由 `scikit-learn` 的依赖关系安装，当前 SCF 模块未直接使�
 本次执行 `python -m pip install --dry-run --no-index -r requirements-scf.txt`，声明的包及传递依赖均已满足，无需安装；原实验入口与三个 SCF 模型的导入检查通过。原依赖文件、训练入口及 Python 环境均未改动。
 
 全局 `pip check` 发现已有的 Streamlit 1.51.0 与 Protobuf 7.36.2 约束冲突。当前训练入口不导入 Streamlit，该问题不计入本项目依赖清单，也未对用户全局环境作修复或降级。
+
+## 8. Linux CUDA 严格确定性兼容修复
+
+2026-10-29，服务器在 `PULSE_SCF`、ETTh1、96→96、batch 256 的首次反向传播报错：`scatter_add_cuda_kernel does not have a deterministic implementation`。日志已成功读取 train 8449、val 2785、test 2785 个窗口，但未完成训练轮次，没有新的预测指标。服务器精确的 PyTorch／CUDA 版本尚未提供。
+
+根因定位到 STAR 的训练硬采样使用 `torch.gather`。其反向调用 `scatter_add_`，与服务器当前环境中的 `torch.use_deterministic_algorithms(True)` 冲突。该调用关系经本机算子跟踪及 [PyTorch 1.10 的官方实现](https://github.com/pytorch/pytorch/blob/v1.10.0/aten/src/ATen/native/TensorAdvancedIndexing.cpp#L1067-L1072)核对。FACT 补齐使用的 `index_select` 反向还会调用 `index_add_`，也一并在 SCF 适配范围内规避。
+
+新增 [deterministic.py](../layers/pulse_scf/deterministic.py)，分别实现：
+
+- `scf_select_core_deterministic`：将相同采样索引转成布尔选择掩码，再求和得到同一个核心，保持硬采样输出和梯度；不改变 multinomial 采样规则。
+- `scf_pad_channels_deterministic`：使用前缀切片或重复后切片进行循环补齐，保持原 SCF 布局及梯度，替代 `index_select`。
+
+完整模型与简单连接模型在现有 SCF 适配类中使用新函数；纯 SOFTS 对照也使用参数名兼容的 `SCFSTAR`。来源副本、原 PULSE、`run.py` 与其严格确定性设置保持原样；不增加可训练参数或新超参数。这是执行兼容修复，不作为新增方法贡献。
+
+新增 [test_scf_deterministic.py](../tests/test_scf_deterministic.py)，包含前向／梯度与原索引算子的等价检查、算子跟踪，以及三个模型在严格确定性下的 FFT 目标、反向和 Adam 更新。CUDA 项在 CUDA 可用时自动执行。
+
+| 环境 | 结果 |
+| --- | --- |
+| 本机 Python 3.13／PyTorch 2.9 CPU | SCF 相关 20 项检查中 19 项通过、1 项 CUDA 检查跳过 |
+| 本机 Python 3.8／PyTorch 2.0 CPU | 专属兼容检查 5 项中 4 项通过、1 项 CUDA 检查跳过 |
+| 服务器目标 GPU／PyTorch 环境 | 待服务器运行新增 CUDA 检查和真实训练验证 |
+
+服务器在项目根目录更新后，先运行专属兼容检查，再重跑脚本：
+
+```bash
+git pull --ff-only origin main
+python -B -m unittest discover -s tests -p test_scf_deterministic.py -v
+bash scripts/PULSE_SCF/ETTh1.sh
+```
+
+服务器 CUDA 可用时，`test_strict_deterministic_training_step_cuda` 应实际执行并显示 `ok`，不能用跳过替代 GPU 验证。正式结果仍待该环境重新训练后填写；现有其他服务器任务无需因本次代码修复被中止。

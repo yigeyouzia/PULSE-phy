@@ -12,6 +12,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+from .deterministic import scf_pad_channels_deterministic, scf_select_core_deterministic
 from .vendor.fact_conv import Conv_block2d
 from .vendor.softs_star import STAR
 
@@ -39,7 +40,7 @@ class SCFSTAR(STAR):
             probabilities = weights.permute(0, 2, 1).reshape(-1, channels)
             indices = torch.multinomial(probabilities, 1)
             indices = indices.view(batch, -1, 1).permute(0, 2, 1)
-            core = torch.gather(features, 1, indices)
+            core = scf_select_core_deterministic(features, indices)
         else:
             core = torch.sum(features * weights, dim=1, keepdim=True)
         combined = torch.cat([input, core.repeat(1, channels, 1)], dim=-1)
@@ -72,10 +73,7 @@ class SCFFACTInteraction(Conv_block2d):
             raise ValueError("SCF FACT expects [B, enc_in, scf_d_model]")
         x = deviation.transpose(1, 2)
         batch, dim, channels = x.shape
-        padding = self.channel_patch * self.channel_patch2 - channels
-        if padding:
-            indices = torch.arange(padding, device=x.device) % channels
-            x = torch.cat([x, x.index_select(-1, indices)], dim=-1)
+        x = scf_pad_channels_deterministic(x, self.channel_patch * self.channel_patch2)
         grid = x.reshape(batch, dim, self.channel_patch, self.channel_patch2)
         updated = grid
         for conv in self.conv:

@@ -2,10 +2,9 @@
 
 from torch import nn
 
-from .interaction import SCFInteraction
+from .interaction import SCFInteraction, SCFSTAR
 from .vendor.softs_embedding import DataEmbedding_inverted
 from .vendor.softs_encoder import Encoder, EncoderLayer
-from .vendor.softs_star import STAR
 
 
 class SCFBackbone(nn.Module):
@@ -16,7 +15,7 @@ class SCFBackbone(nn.Module):
         self.embedding = DataEmbedding_inverted(seq_len, settings.d_model, settings.dropout)
         layers = []
         for _ in range(settings.e_layers):
-            interaction = (STAR(settings.d_model, settings.d_core) if variant == "softs"
+            interaction = (SCFSTAR(settings.d_model, settings.d_core) if variant == "softs"
                            else SCFInteraction(channels, seq_len, settings, variant))
             layers.append(EncoderLayer(
                 interaction, settings.d_model, settings.d_ff,
