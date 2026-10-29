@@ -237,15 +237,14 @@ class SCFScriptTests(unittest.TestCase):
             "import json,os,sys\n"
             "with open(os.environ['SCF_ARGV_CAPTURE'],'a') as out:\n"
             " out.write(json.dumps(sys.argv[1:])+'\\n')\n"
+            "print(os.environ.get('SCF_STUB_OUTPUT','stdout'),flush=True)\n"
+            "print('stderr',file=sys.stderr,flush=True)\n"
             "sys.exit(int(os.environ.get('SCF_STUB_EXIT','0')))\n"
         )
         stub.chmod(0o755)
         capture = directory / "arguments.jsonl"
         env = dict(os.environ, PATH=str(directory) + os.pathsep + os.environ["PATH"],
-                   SCF_ARGV_CAPTURE=str(capture), RUN_TAG="argument_check")
-        # Isolate the test from optional selections in the caller's shell.
-        env.pop("MODEL_NAME", None)
-        env.pop("PRED_LENS", None)
+                   SCF_ARGV_CAPTURE=str(capture))
         env.update(environment)
         result = subprocess.run(["bash", str(script)], cwd=directory, env=env,
                                 text=True, capture_output=True)
@@ -289,76 +288,84 @@ class SCFScriptTests(unittest.TestCase):
                         old_args = vars(parser.parse_args(old[2:]))
                         new_args = vars(parser.parse_args(new[2:]))
                         self.assertEqual(new_args["model"], model)
-                        self.assertIn("argument_check", new_args["model_id"])
+                        dataset = old_args["model_id"].rsplit("_", 2)[0]
+                        prefix = "{}_{}_{}_{}_".format(
+                            model, dataset, new_args["seq_len"], new_args["pred_len"])
+                        self.assertTrue(new_args["model_id"].startswith(prefix))
+                        self.assertRegex(new_args["model_id"][len(prefix):], r"^\d{8}T\d{6}Z_\d+$")
                         self.assertEqual(new_args["checkpoints"], "./checkpoints/" + model + "/")
                         for key in old_args.keys() - {"model", "model_id", "checkpoints"}:
                             self.assertEqual(new_args[key], old_args[key], (filename, key))
                         self.assertEqual(log.name, "{}_{}_{}.log".format(
                             model, new_args["seq_len"], new_args["pred_len"]))
                         self.assertTrue(log.is_absolute() and log.is_file())
-                        self.assertIn("/logs/" + model + "/", str(log))
+                        self.assertEqual(log.parent.resolve(),
+                                         (Path(new_dir) / "logs" / model / dataset).resolve())
+                        self.assertEqual(log.read_text(), "stdout\nstderr\n")
 
-    def test_shared_script_model_controls_and_single_horizon(self):
-        parser = self.scf_original_parser()
-        for model in ("PULSE", "PULSE_SOFTS", "PULSE_SCF_SIMPLE", "PULSE_SCF"):
-            with tempfile.TemporaryDirectory() as directory:
-                result, commands = self.scf_run_script(
-                    self.root / "scripts/PULSE_SCF/ETTh1.sh", directory,
-                    MODEL_NAME=model, PRED_LENS="96",
-                )
-                self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertEqual(len(commands), 1)
-                args = parser.parse_args(commands[0][2:])
-                self.assertEqual(args.model, model)
-                self.assertEqual(args.pred_len, 96)
-                log_lines = [line[len("Log: "):] for line in result.stdout.splitlines()
-                             if line.startswith("Log: ")]
-                self.assertEqual(len(log_lines), 1)
-                announced = Path(log_lines[0])
-                self.assertTrue(announced.is_absolute())
-                self.assertTrue(announced.is_file())
-                expected = (Path(directory) / "logs" / model / "ETTh1" / "argument_check"
-                            / (model + "_96_96.log"))
-                self.assertEqual(announced.resolve(), expected.resolve())
-                self.assertIn("Watch: tail -f ", result.stdout)
-
-    def test_script_propagates_failure_and_prevents_log_overwrite(self):
+    def test_script_propagates_failure_and_reuses_logs_with_unique_experiments(self):
         script = self.root / "scripts/PULSE_SCF/ETTh1.sh"
+        parser = self.scf_original_parser()
         with tempfile.TemporaryDirectory() as directory:
             result, commands = self.scf_run_script(
-                script, directory, SCF_STUB_EXIT="37", PRED_LENS="96 192 336 720",
+                script, directory, SCF_STUB_EXIT="37",
             )
             self.assertEqual(result.returncode, 37)
             self.assertEqual(len(commands), 1)
         with tempfile.TemporaryDirectory() as directory:
             result, commands = self.scf_run_script(script, directory)
             self.assertEqual(result.returncode, 0)
-            repeated, repeated_commands = self.scf_run_script(script, directory)
-            self.assertNotEqual(repeated.returncode, 0)
-            self.assertEqual(len(repeated_commands), len(commands))
-
-    def test_scripts_reject_unknown_model_or_horizon(self):
-        for selection in ({"MODEL_NAME": "unknown"}, {"PRED_LENS": "97"}):
-            with tempfile.TemporaryDirectory() as directory:
-                result, commands = self.scf_run_script(
-                    self.root / "scripts/PULSE_SCF/Weather.sh", directory, **selection,
-                )
-                self.assertEqual(result.returncode, 2)
-                self.assertEqual(commands, [])
+            repeated, repeated_commands = self.scf_run_script(
+                script, directory, SCF_STUB_OUTPUT="second run")
+            self.assertEqual(repeated.returncode, 0, repeated.stderr)
+            self.assertEqual(len(repeated_commands), 2 * len(commands))
+            first_ids = {parser.parse_args(c[2:]).model_id for c in commands}
+            second_ids = {parser.parse_args(c[2:]).model_id
+                          for c in repeated_commands[len(commands):]}
+            self.assertTrue(first_ids.isdisjoint(second_ids))
+            logs = list((Path(directory) / "logs").rglob("*.log"))
+            self.assertEqual(len(logs), 4)
+            for log in logs:
+                self.assertEqual(log.read_text(), "second run\nstderr\n")
 
     def test_pems_keeps_source_short_term_horizons(self):
         parser = self.scf_original_parser()
         script = self.root / "scripts/PULSE_SCF/PEMS03.sh"
         with tempfile.TemporaryDirectory() as directory:
-            result, commands = self.scf_run_script(script, directory, PRED_LENS="12 48")
+            result, commands = self.scf_run_script(script, directory)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual([parser.parse_args(c[2:]).pred_len for c in commands], [12, 48])
+            self.assertEqual([parser.parse_args(c[2:]).pred_len for c in commands], [12, 24, 48, 96])
             logs = list((Path(directory) / "logs").rglob("*.log"))
-            self.assertEqual({p.name for p in logs}, {"PULSE_SCF_96_12.log", "PULSE_SCF_96_48.log"})
+            self.assertEqual({p.name for p in logs},
+                             {"PULSE_SCF_96_{}.log".format(h) for h in (12, 24, 48, 96)})
+
+    def test_launcher_runs_all_three_models_with_scf_first(self):
+        parser = self.scf_original_parser()
+        script = self.root / "scripts/run_PULSE_SCF_SOFTS_SIMPLE.sh"
+        subprocess.run(["bash", "-n", str(script)], check=True)
         with tempfile.TemporaryDirectory() as directory:
-            result, commands = self.scf_run_script(script, directory, PRED_LENS="192")
-            self.assertEqual(result.returncode, 2)
-            self.assertEqual(commands, [])
+            (Path(directory) / "scripts").symlink_to(self.root / "scripts", target_is_directory=True)
+            result, commands = self.scf_run_script(script, directory)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            args = [parser.parse_args(c[2:]) for c in commands]
+            self.assertEqual(len(args), 144)
+            expected_datasets = ("ETTh1", "ETTh2", "ETTm1", "ETTm2", "Electricity", "traffic",
+                                 "weather", "Solar", "PEMS03", "PEMS04", "PEMS07", "PEMS08")
+            for index, model in enumerate(("PULSE_SCF", "PULSE_SOFTS", "PULSE_SCF_SIMPLE")):
+                runs = args[index * 48:(index + 1) * 48]
+                self.assertEqual({a.model for a in runs}, {model})
+                self.assertEqual([a.model_id[len(model) + 1:].split("_", 1)[0]
+                                  for a in runs[::4]], list(expected_datasets))
+            self.assertEqual(len(list((Path(directory) / "logs").rglob("*.log"))), 144)
+
+    def test_launcher_stops_when_first_training_command_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / "scripts").symlink_to(self.root / "scripts", target_is_directory=True)
+            result, commands = self.scf_run_script(
+                self.root / "scripts/run_PULSE_SCF_SOFTS_SIMPLE.sh", directory, SCF_STUB_EXIT="37")
+            self.assertEqual(result.returncode, 37)
+            self.assertEqual(len(commands), 1)
+            self.assertIn("PULSE_SCF", commands[0])
 
 
 if __name__ == "__main__":

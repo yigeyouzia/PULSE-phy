@@ -1,6 +1,6 @@
 # PULSE SCF 首版实现与开发检查
 
-日期：2026-10-29。范围：ETTh1 与 Weather 的模型和运行脚本；暂不安排大桥数据适配或实验。
+日期：2026-10-29。首版范围：ETTh1 与 Weather 的模型和运行脚本；当前脚本已扩展至四模型与十二个标准数据集，另含三个扩展模型的一键启动清单；暂不安排大桥数据适配或实验。
 
 记录位置：`PULSE-phy/notes/`。目录已由用户移入主开发仓库，根目录开发约束见 [AGENTS.md](../../AGENTS.md)，工程内链接已按新位置修正。
 
@@ -33,8 +33,8 @@ PULSE 工程起始提交为 `8e4e3226be5685170a048a664fb359b807b742a3`。开发�
 | [backbone.py](../layers/pulse_scf/backbone.py) | SOFTS 式嵌入、编码器与预测头 |
 | [interaction.py](../layers/pulse_scf/interaction.py) | STAR 核心访问、FACT 增量适配、历史状态门控与连接 |
 | [vendor 来源清单](../layers/pulse_scf/vendor/sources.json) | 复制 4 个来源模块，记录文件哈希、选择的类与改动说明，保留两个来源许可证 |
-| [ETTh1.sh](../scripts/PULSE_SCF/ETTh1.sh) | 从原 ETTh1 脚本复制配置与命令结构，增加明确的模型和长度选择 |
-| [Weather.sh](../scripts/PULSE_SCF/Weather.sh) | 从原 Weather 脚本复制配置与命令结构，增加明确的模型和长度选择 |
+| [ETTh1.sh](../scripts/PULSE_SCF/ETTh1.sh) | 从原 ETTh1 脚本复制配置与直接命令结构，固定模型名，顺序运行四个时距 |
+| [Weather.sh](../scripts/PULSE_SCF/Weather.sh) | 从原 Weather 脚本复制配置与直接命令结构，固定模型名，顺序运行四个时距 |
 | [test_pulse_scf.py](../tests/test_pulse_scf.py) | 模块、模型、原验证流程与脚本的 15 项检查 |
 
 `exp_main.py` 仅注册 `PULSE_SOFTS`、`PULSE_SCF_SIMPLE`、`PULSE_SCF`。原实验类中的训练、损失、验证、测试和保存逻辑未改写，未新增 Python 训练入口。
@@ -76,38 +76,42 @@ bash scripts/PULSE_SCF/ETTh1.sh
 bash scripts/PULSE_SOFTS/Weather.sh
 bash scripts/PULSE_SCF_SIMPLE/traffic.sh
 bash scripts/PULSE/electricity.sh
-PRED_LENS="96 192" bash scripts/PULSE_SCF/ETTm1.sh
-PRED_LENS="12 24" bash scripts/PULSE_SCF/PEMS03.sh
+bash scripts/PULSE_SCF/ETTm1.sh
+bash scripts/PULSE_SCF/PEMS03.sh
+# 三个扩展模型的全部数据集，优先 PULSE_SCF
+bash scripts/run_PULSE_SCF_SOFTS_SIMPLE.sh
 ```
 
-每个脚本默认运行原仓库为该数据集配置的四个时距；PEMS 为 12、24、48、96，其他为 96、192、336、720，输入均为 96。`PULSE_SCF/` 保留 `MODEL_NAME` 选择的兼容用法，其他模型目录固定模型名。
+每个脚本默认直接顺序运行原仓库为该数据集配置的四个时距；PEMS 为 12、24、48、96，其他为 96、192、336、720，输入均为 96。所有模型目录固定自己的模型名，脚本不再定义函数或读取模型、时距选择变量。需要单时距时直接保留对应命令块。
+
+一键脚本 [run_PULSE_SCF_SOFTS_SIMPLE.sh](../scripts/run_PULSE_SCF_SOFTS_SIMPLE.sh) 按 PULSE_SCF → PULSE_SOFTS → PULSE_SCF_SIMPLE 顺序逐行调用各模型的十二份数据集脚本，不执行原 PULSE。数据集顺序为 ETTh1、ETTh2、ETTm1、ETTm2、electricity、traffic、Weather、Solar、PEMS03、PEMS04、PEMS07、PEMS08。共 36 份脚本、144 个训练命令，全部顺序执行；任一失败即停，不自动跳过或恢复已完成实验。
 
 ### 4.1 日志和 checkpoint 位置
 
 ```text
-logs/<ModelName>/<dataset>/<run_tag>/<ModelName>_<seq_len>_<pred_len>.log
+logs/<ModelName>/<dataset>/<ModelName>_<seq_len>_<pred_len>.log
 checkpoints/<ModelName>/<setting>/checkpoint.pth
 ```
 
-例如 `logs/PULSE_SCF/ETTh1/<run_tag>/PULSE_SCF_96_96.log`、`logs/PULSE_SCF/weather/<run_tag>/PULSE_SCF_96_192.log`。文件名到长度对为止，不再追加时间戳；模型、数据集及运行目录继续隔离实验。Weather 的日志目录保留小写 `weather`。
+例如 `logs/PULSE_SCF/ETTh1/PULSE_SCF_96_96.log`、`logs/PULSE_SCF/weather/PULSE_SCF_96_192.log`。文件名到长度对为止，不再追加时间戳；日志目录仅按模型、数据集分类，不含运行标识。Weather 的日志目录保留小写 `weather`。
 
-每个时距启动前打印模型、数据集、长度、日志绝对路径、`tail -f` 命令以及 checkpoint 根目录。训练标准输出与错误仍通过 `> "$log_file" 2>&1` 写入文件，早停及失败状态沿用现有逻辑。
+顶部直接打印 checkpoint 根目录，每个时距启动前用一条 `echo` 打印日志绝对路径。训练标准输出与错误通过 `> "$dir/${model_name}_${seq_len}_${pred_len}.log" 2>&1` 写入文件；`set -e` 保证失败即停。
 
 checkpoint 分组只增加模型分类层，使用已有 `--checkpoints` 参数，不改 `run.py`。训练结束后的最佳权重恢复与自动测试支持该配置；独立 `--is_training 0` 分支仍硬编码旧路径，尚未适配这一新分组。
 
-### 4.2 固定标识与查看
+### 4.2 重复运行与查看
 
 ```bash
-RUN_TAG=etth1_scf_001 PRED_LENS=96 bash scripts/PULSE_SCF/ETTh1.sh
+bash scripts/PULSE_SCF/ETTh1.sh
 ```
 
 从另一终端查看：
 
 ```bash
-tail -f /Users/cyt/projects/i/pinn-code/PULSE-phy/logs/PULSE_SCF/ETTh1/etth1_scf_001/PULSE_SCF_96_96.log
+tail -f logs/PULSE_SCF/ETTh1/PULSE_SCF_96_96.log
 ```
 
-此标识仅为示例，不表示已经产生结果；再次运行请使用新的标识，已有日志禁止覆盖。历史日志和 checkpoint 不自动更名或迁移。数据文件仍放在原 `all_datasets/`，以实际脚本中的文件名为准。
+同模型、数据集、长度对再次运行会覆盖对应固定路径的日志，需要保留时提前归档。顶部 `experiment_id` 自动生成时间戳和进程号，只用于 `model_id` 和 checkpoint 独立实验目录。历史日志和 checkpoint 不自动更名或迁移。数据文件仍放在原 `all_datasets/`，以实际脚本中的文件名为准；上述命令不代表已有结果。
 
 ## 5. 开发检查记录
 
@@ -126,7 +130,8 @@ tail -f /Users/cyt/projects/i/pinn-code/PULSE-phy/logs/PULSE_SCF/ETTh1/etth1_scf
 | 原实验类注册及验证流程 | 原 PULSE 与三个新模型均通过 |
 | 当前 48 个模型／数据集脚本的 Bash 语法 | 通过 |
 | 当前 192 条模型／数据集／时距命令参数 | 通过；仅模型、独立标识和 checkpoint 根目录按计划变化 |
-| 脚本默认长度、显式对照、失败传递及防覆盖 | 通过 |
+| 脚本默认长度、失败传递、固定日志覆盖及独立 checkpoint 标识 | 通过 |
+| 一键启动的三个模型、十二数据集顺序及失败停止 | 通过；144 个临时命令捕获，不启动训练 |
 | 原 `run.py --help` | 通过 |
 | 来源模块原文与副本哈希 | 通过 |
 | 开始时既有文件哈希对比 | 125 个文件中仅允许的实验类注册发生变化 |
@@ -215,16 +220,16 @@ bash scripts/PULSE_SCF/ETTh1.sh
 
 用户明确的基础组合为 PULSE＋SOFTS、PULSE＋FACT、PULSE＋SOFTS＋FACT。当前独立 PULSE＋FACT 尚未实现；`PULSE_SCF_SIMPLE` 属于含 STAR 的三者简单连接，不能代替这一缺失对照。
 
-本次不改变模型结构、代码组织或训练入口，只新增四个专用 shell 脚本：
+此阶段不改变模型结构、代码组织或训练入口，只新增四个专用 shell 脚本。下表路径已同步为当前规则：
 
 | 脚本 | 固定模型 | 默认预测长度 | 日志目录 |
 | --- | --- | --- | --- |
-| [PULSE_SOFTS/ETTh1.sh](../scripts/PULSE_SOFTS/ETTh1.sh) | PULSE_SOFTS | 96、192、336、720 | `logs/PULSE_SOFTS/ETTh1/<run_tag>/` |
-| [PULSE_SOFTS/Weather.sh](../scripts/PULSE_SOFTS/Weather.sh) | PULSE_SOFTS | 96、192、336、720 | `logs/PULSE_SOFTS/weather/<run_tag>/` |
-| [PULSE_SCF_SIMPLE/ETTh1.sh](../scripts/PULSE_SCF_SIMPLE/ETTh1.sh) | PULSE_SCF_SIMPLE | 96、192、336、720 | `logs/PULSE_SCF_SIMPLE/ETTh1/<run_tag>/` |
-| [PULSE_SCF_SIMPLE/Weather.sh](../scripts/PULSE_SCF_SIMPLE/Weather.sh) | PULSE_SCF_SIMPLE | 96、192、336、720 | `logs/PULSE_SCF_SIMPLE/weather/<run_tag>/` |
+| [PULSE_SOFTS/ETTh1.sh](../scripts/PULSE_SOFTS/ETTh1.sh) | PULSE_SOFTS | 96、192、336、720 | `logs/PULSE_SOFTS/ETTh1/` |
+| [PULSE_SOFTS/Weather.sh](../scripts/PULSE_SOFTS/Weather.sh) | PULSE_SOFTS | 96、192、336、720 | `logs/PULSE_SOFTS/weather/` |
+| [PULSE_SCF_SIMPLE/ETTh1.sh](../scripts/PULSE_SCF_SIMPLE/ETTh1.sh) | PULSE_SCF_SIMPLE | 96、192、336、720 | `logs/PULSE_SCF_SIMPLE/ETTh1/` |
+| [PULSE_SCF_SIMPLE/Weather.sh](../scripts/PULSE_SCF_SIMPLE/Weather.sh) | PULSE_SCF_SIMPLE | 96、192、336、720 | `logs/PULSE_SCF_SIMPLE/weather/` |
 
-专用脚本不读取 `MODEL_NAME`，以避免与其他实验的环境变量混淆。设置 `PRED_LENS=96` 可只跑一次。该阶段原共享脚本仍默认单个预测长度 96；本次完整脚本补齐后统一按原数据集四个时距运行，以第 10 节为准。
+此阶段曾提供环境变量选择时距；后续按用户要求移除函数及全部选择器，统一固定模型名并按原数据集四个时距直接运行，当前用法以第 4 节为准。
 
 四个新脚本均通过 Bash 语法、默认四时距、单时距选择、参数等价和实际日志路径捕获检查；这些检查使用临时命令捕获，不启动训练。逐项对比了全部 51 个既有 Python 文件的哈希，本次均未改变。
 
@@ -234,10 +239,20 @@ bash scripts/PULSE_SCF/ETTh1.sh
 
 2026-10-29，按用户最新要求补齐四个已实现模型与十二个标准数据集的全部 48 个脚本，详见[完整索引](模型数据集脚本与输出索引.md)。不扩展尚未实现的独立 PULSE＋FACT，也不加入大桥数据。
 
-日志使用模型名加长度对，例如 `PULSE_SCF_96_96.log`、`PULSE_SCF_96_192.log`，到长度对为止，不追加数据集、时间或进程号；目录仍保留模型、数据集和运行标识，避免同名冲突。保留全部原时距，命名精简不裁剪实验。
+日志使用模型名加长度对，例如 `PULSE_SCF_96_96.log`、`PULSE_SCF_96_192.log`，到长度对为止，不追加数据集、时间或进程号。后续已按用户最新要求删除日志的运行标识目录，现为 `logs/<ModelName>/<dataset>/<ModelName>_<seq_len>_<pred_len>.log`；再次运行同一配置覆盖日志。保留全部原时距，命名精简不裁剪实验。
 
 checkpoint 增加模型名分类层，通过现有 `--checkpoints ./checkpoints/<ModelName>/` 指定，得到 `checkpoints/<ModelName>/<setting>/checkpoint.pth`。训练、最佳权重恢复和自动测试使用既有流程。旧独立测试加载分支的硬编码根路径仍需另行适配，本轮未修改。
 
 本轮修改 shell、配套脚本测试和文档，未修改模型或 Python 训练代码。所有原仓库根层脚本、历史日志、历史 checkpoint 保留原样；新规则从下一次使用模型目录内的脚本运行起生效。
 
 本次检查：48 个脚本的语法、192 条命令与来源配置的比较、短文件名及模型 checkpoint 参数全部通过。四模型 × 十二数据集配置 × 四时距的 192 项随机张量 CPU 前向检查均输出正确形状和有限数值。SCF 专属回归共 21 项，其中 20 项通过，CUDA 项因本机无 NVIDIA GPU 跳过。以上不代表全部数据集已完成正式 GPU 训练。
+
+## 11. 简约脚本与三个模型的一键执行
+
+2026-10-29，先更新工作区约束第 8、9 节，再统一简化 48 份数据集脚本：固定模型名、顶部配置、四段直接的 `python -u run.py` 命令；移除函数、环境变量选择器及日志运行标识目录。日志固定在 `logs/<ModelName>/<dataset>/`，重复运行覆盖同名日志；checkpoint 仍按模型分类，并通过顶部 `experiment_id` 保留独立实验目录。
+
+新增 [run_PULSE_SCF_SOFTS_SIMPLE.sh](../scripts/run_PULSE_SCF_SOFTS_SIMPLE.sh)，逐行顺序调用 PULSE_SCF、PULSE_SOFTS、PULSE_SCF_SIMPLE 各十二个数据集的脚本。优先执行 PULSE_SCF，共 144 个训练命令，不包含原 PULSE。任一子脚本失败即停止。
+
+本轮验证：49 份脚本的 Bash 语法通过；48 份数据集脚本的 192 条命令与来源配置等价；一键清单的 144 条临时命令顺序、完整覆盖及失败停止通过；日志包含标准输出与错误，固定路径覆盖和重复运行的独立实验标识检查通过。21 项 SCF 回归中 20 项通过，1 项 CUDA 检查跳过。以上采用临时命令捕获，没有启动真实训练。既有 61 个 Python 代码与原数据集脚本的哈希保持不变；本轮 Python 改动仅为配套脚本测试。
+
+根约束文件位于 `PULSE-phy/` Git 仓库之外，保留在工作区本地；仓库内的脚本规则、运行顺序和输出格式同步记录在本文件及[完整索引](模型数据集脚本与输出索引.md)，随本次提交推送。

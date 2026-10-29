@@ -132,7 +132,7 @@ $$
 
 1. 新 CLI 参数需要加入现有参数解析，属于 `run.py` 保护范围；本轮使用模型内独立默认值。
 2. 当前脚本补齐原仓库十二个标准数据集，不安排大桥数据适配、脚本或实验。
-3. 通过模型名和运行标识区分新实验，保持原入口实验命名函数。日志名使用模型与长度对；已有 `--checkpoints` 参数指定模型分类根目录。有效 SCF 配置保存在新模型检查点的 `_extra_state` 中。
+3. checkpoint 通过模型名和运行标识区分新实验，保持原入口实验命名函数；日志按模型、数据集及长度对保存到固定路径，再次运行覆盖该日志。已有 `--checkpoints` 参数指定模型分类根目录。有效 SCF 配置保存在新模型检查点的 `_extra_state` 中。
 4. Mac 用于模型级检查，正式训练优先沿用已有 CUDA 路径。若扩展完整 CPU 训练或恢复逻辑，作为单独的工程适配记录，不计入结构贡献。
 
 任何入口修改都先提交具体改动说明，获得用户明确确认后才修改 `run.py`。本轮的默认模型注册和脚本检查不依赖入口修改；尚未进行真实数据训练，不能据此宣称 GPU 训练全流程已验证。
@@ -143,29 +143,33 @@ $$
 
 数据集为 ETTh1、ETTh2、ETTm1、ETTm2、electricity、traffic、Weather、Solar、PEMS03、PEMS04、PEMS07、PEMS08；不包括大桥数据。默认保留原脚本的四个预测长度：普通长预测为 96、192、336、720，PEMS 为 12、24、48、96。独立 PULSE＋FACT 尚未实现，不创建其占位运行脚本。
 
-原脚本顶部变量与续行 `python -u run.py` 格式保持一致，逐时距保留 Router、周期、批量、学习率、种子和训练设置。只改变模型选择、独立模型标识及 checkpoint 根目录；不改变 Python 模型或原训练入口。
+原脚本顶部变量与续行 `python -u run.py` 格式保持一致，逐时距保留 Router、周期、批量、学习率、种子和训练设置。每个脚本固定模型名，直接展开四个命令块，无 shell 函数、模型切换或时距选择器。只改变模型名、独立模型标识及 checkpoint 根目录；不改变 Python 模型或原训练入口。需要单时距时直接保留对应命令块。
 
 ```bash
 bash scripts/PULSE_SCF/electricity.sh
 bash scripts/PULSE_SOFTS/ETTm2.sh
 bash scripts/PULSE_SCF_SIMPLE/traffic.sh
 bash scripts/PULSE/ETTh1.sh
-PRED_LENS="96 192" bash scripts/PULSE_SCF/Weather.sh
-PRED_LENS="12 24" bash scripts/PULSE_SCF/PEMS03.sh
+bash scripts/PULSE_SCF/Weather.sh
+bash scripts/PULSE_SCF/PEMS03.sh
+# 一键顺序运行三个扩展模型的所有标准数据集，优先 PULSE_SCF
+bash scripts/run_PULSE_SCF_SOFTS_SIMPLE.sh
 ```
+
+一键脚本 [run_PULSE_SCF_SOFTS_SIMPLE.sh](../scripts/run_PULSE_SCF_SOFTS_SIMPLE.sh) 只逐行调用已有数据集脚本：先 PULSE_SCF 的十二个数据集，再 PULSE_SOFTS，最后 PULSE_SCF_SIMPLE，不执行原 PULSE。每模型依次运行 ETTh1、ETTh2、ETTm1、ETTm2、electricity、traffic、Weather、Solar、PEMS03、PEMS04、PEMS07、PEMS08，共 36 份数据集脚本、144 个训练命令。顺序执行、失败即停，不提供跳过已完成实验或自动恢复功能。
 
 ### 5.2 日志、checkpoint 与预计目录
 
-按用户最新示例，日志使用 `<ModelName>_<seq_len>_<pred_len>.log`，例如 `PULSE_SCF_96_96.log`、`PULSE_SCF_96_192.log`，不追加时间或其他后缀。数据集和运行标识保留在目录中，避免同名覆盖。改日志名不意味着只运行 96、192 两个预测长度。
+按用户最新示例，日志使用 `<ModelName>_<seq_len>_<pred_len>.log`，例如 `PULSE_SCF_96_96.log`、`PULSE_SCF_96_192.log`，不追加时间或其他后缀。目录仅保留模型和数据集，删除运行标识层；同一配置再次运行覆盖日志，保留旧日志需提前归档。改日志名不意味着只运行 96、192 两个预测长度。
 
 ```text
-logs/<ModelName>/<dataset>/<run_tag>/<ModelName>_<seq_len>_<pred_len>.log
+logs/<ModelName>/<dataset>/<ModelName>_<seq_len>_<pred_len>.log
 checkpoints/<ModelName>/<setting>/checkpoint.pth
 ```
 
 脚本通过既有参数 `--checkpoints ./checkpoints/<ModelName>/` 指定模型分类目录，`setting` 和 `checkpoint.pth` 保持原入口与保存逻辑。当前训练后自动测试无需改 Python 代码；旧 `--is_training 0` 独立测试加载分支写死了原根路径，尚未适配新分类，若需要须另行修改和验证。
 
-终端打印准确日志路径、查看命令和 checkpoint 根目录。完整预计 tree 见工作区[开发约束第 9 节](../../AGENTS.md#9-输出目录格式与预计结构)，历史日志和 checkpoint 不自动迁移。
+终端直接打印准确日志路径和 checkpoint 根目录。顶部 `experiment_id` 只用于独立 checkpoint 实验标识，不进入日志路径。完整预计 tree 见工作区[开发约束第 9 节](../../AGENTS.md#9-输出目录格式与预计结构)，历史日志和 checkpoint 不自动迁移。
 
 依赖清单为 `requirements-scf.txt`，从工程根目录使用同一解释器执行 `python -m pip install -r requirements-scf.txt`。正式训练需要实际数据与对应 GPU 环境，参数与随机张量检查不替代真实结果。
 
@@ -293,6 +297,7 @@ checkpoints/<ModelName>/<setting>/checkpoint.pth
 | 2026-10-29 | 修复 SCF 索引反向的严格确定性兼容 | 保留采样和模型参数，原 `run.py` 与来源副本不变；CPU 检查通过，目标 CUDA 环境待验证 |
 | 2026-10-29 | 明确基础组合的实现缺口并增加专用脚本 | 独立 PULSE＋FACT 尚未实现；仅为已实现的 PULSE_SOFTS、PULSE_SCF_SIMPLE 新增脚本，默认四个预测长度，Python 代码不变 |
 | 2026-10-29 | 补齐四模型与十二数据集的 48 个脚本并统一输出 | 日志仅保留模型和长度对；checkpoint 增加模型分类层，使用已有参数；模型与训练代码不变，原根层脚本和历史输出不迁移 |
+| 2026-10-29 | 按原版风格简化所有脚本，增加一键启动清单 | 去除函数和选择器，日志删除运行标识目录；固定日志路径重复运行覆盖，checkpoint 保留独立标识；一键按 PULSE_SCF、PULSE_SOFTS、PULSE_SCF_SIMPLE 顺序运行全部十二个标准数据集 |
 
 ## 11. 研究背景入口
 
