@@ -1,6 +1,6 @@
 # PULSE 框架下 SOFTS 与 FACT 融合开发计划
 
-创建与更新日期：2026-10-29。状态：首版代码、模型注册和脚本已完成，开发检查通过；尚无融合模型的真实数据训练结果。具体实现与验证见[开发记录](PULSE-SCF开发记录.md)。
+创建与更新日期：2026-10-29。状态：首版代码、模型注册和脚本已完成；用户服务器截图已显示 PULSE_SCF 的 ETTh1 96→96 单次训练与测试完成，同协议基线比较尚未完成。具体实现与验证见[开发记录](PULSE-SCF开发记录.md)。
 
 开发遵守工作区根目录的[通用开发约束](../../AGENTS.md)。代码开发位置为 `PULSE-phy/`；`SOFTS-main/` 与 `FACT-main/` 保持原样，所需模块复制进主开发工程。
 
@@ -23,6 +23,19 @@
 | 当前数据范围 | ETTh1、Weather；暂不安排 Gje 大桥数据内容 |
 
 “共享背景与偏离的协作可以减少重复交互、适应状态变化”是研究假设，尚未由本项目实验验证。新颖性需要与最近邻工作比较，不能将普通门控或共性分解本身当作已成立的新贡献。
+
+### 1.1 基础组合与实际实现状态
+
+按用户明确的三个基础组合，当前状态如下：
+
+| 基础组合或扩展 | 对应模型 | 当前状态 |
+| --- | --- | --- |
+| PULSE＋SOFTS | `PULSE_SOFTS` | 已实现，保留 STAR，不含 FACT |
+| PULSE＋FACT | 尚无独立模型 | 未实现，后续需补充该基础对照；本次不改 Python 模型代码 |
+| PULSE＋SOFTS＋FACT 简单连接 | `PULSE_SCF_SIMPLE` | 已实现，同时含 STAR 和 FACT |
+| PULSE＋SOFTS＋FACT 条件连接 | `PULSE_SCF` | 已实现，增加共享核心偏离和历史状态门控 |
+
+`PULSE_SCF_SIMPLE` 不等于 PULSE＋FACT；它仍先使用 STAR，再加入直接作用于变量表示的 FACT 增量。此前实现的三个新模型没有覆盖独立 PULSE＋FACT，不能将这一基础对照视为已完成。
 
 ## 2. 本地源码与模块职责
 
@@ -102,6 +115,8 @@ $$
 | `PULSE-phy/layers/pulse_scf/` | 已新增 | 来源模块副本、独立配置、SCF 扩展、条件连接与 backbone |
 | `PULSE-phy/layers/pulse_scf/deterministic.py` | 已新增 | 等价的核心选择与循环补齐，避免索引反向的 scatter／index-add 路径 |
 | `PULSE-phy/scripts/PULSE_SCF/` | 已新增 | 保持原数据集脚本名和配置格式，复用原训练入口 |
+| `PULSE-phy/scripts/PULSE_SOFTS/` | 已新增 | 固定 SOFTS 骨干对照的专用 ETTh1、Weather 脚本 |
+| `PULSE-phy/scripts/PULSE_SCF_SIMPLE/` | 已新增 | 固定 STAR＋FACT 简单连接的专用 ETTh1、Weather 脚本 |
 | `PULSE-phy/tests/test_pulse_scf.py` | 已新增 | 接口、梯度、训练配对、保存恢复及脚本检查 |
 | `PULSE-phy/tests/test_scf_deterministic.py` | 已新增 | 严格确定性下的等价性与训练步检查，CUDA 可用时执行 GPU 项 |
 | `PULSE-phy/exp/exp_main.py` | 已增加 4 行 | 1 行导入、3 个注册项；既有训练与评价逻辑保持原样 |
@@ -127,8 +142,14 @@ $$
 | --- | --- | --- | --- |
 | `PULSE-phy/scripts/PULSE_SCF/ETTh1.sh` | `PULSE-phy/scripts/ETTh1.sh` | 历史 96、预测 96 | 按原脚本的配置支持预测 192、336、720 |
 | `PULSE-phy/scripts/PULSE_SCF/Weather.sh` | `PULSE-phy/scripts/Weather.sh` | 历史 96、预测 96 | 按原脚本的配置支持预测 192、336、720 |
+| `PULSE-phy/scripts/PULSE_SOFTS/ETTh1.sh` | `PULSE-phy/scripts/ETTh1.sh` | 默认顺序运行 96、192、336、720 | `PRED_LENS=96` 可单独试跑 |
+| `PULSE-phy/scripts/PULSE_SOFTS/Weather.sh` | `PULSE-phy/scripts/Weather.sh` | 默认顺序运行 96、192、336、720 | `PRED_LENS=96` 可单独试跑 |
+| `PULSE-phy/scripts/PULSE_SCF_SIMPLE/ETTh1.sh` | `PULSE-phy/scripts/ETTh1.sh` | 默认顺序运行 96、192、336、720 | `PRED_LENS=96` 可单独试跑 |
+| `PULSE-phy/scripts/PULSE_SCF_SIMPLE/Weather.sh` | `PULSE-phy/scripts/Weather.sh` | 默认顺序运行 96、192、336、720 | `PRED_LENS=96` 可单独试跑 |
 
 脚本复制对应原脚本的变量和续行命令结构，保留各预测长度对应的 Router、周期和训练参考设置。仅调整模型选择、独立日志与运行标识，并加入少量 shell 长度筛选。默认只运行预测 96；其他长度通过 shell 配置选择。
+
+上述单长度默认针对原 `scripts/PULSE_SCF/` 共享脚本。新增的 `PULSE_SOFTS/` 与 `PULSE_SCF_SIMPLE/` 专用脚本默认跑齐四个预测长度，模型名固定，不读取 `MODEL_NAME`；实际训练参数与共享脚本选择相同模型、相同时距时一致，不修改任何 Python 文件或原共享脚本。
 
 对照通过显式模型名 `PULSE_SOFTS`、`PULSE_SCF_SIMPLE`、`PULSE_SCF` 选择，`MODEL_NAME=PULSE` 可运行原模型参照。沿用同一组数据脚本，不另建 Python 训练入口。第一版脚本只传现有 `run.py` 已支持的参数，SCF 专属参数使用模型内独立默认值；可调命令行接入另行确认。当前两个公开数据脚本通过最小模型注册接入原流程，不以修改 `run.py` 为前提。
 
@@ -140,6 +161,18 @@ MODEL_NAME=PULSE_SOFTS bash scripts/PULSE_SCF/ETTh1.sh
 MODEL_NAME=PULSE_SCF_SIMPLE bash scripts/PULSE_SCF/ETTh1.sh
 PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/Weather.sh
 ```
+
+新增专用脚本从工程根目录直接运行，无需再指定模型名：
+
+```bash
+bash scripts/PULSE_SOFTS/ETTh1.sh
+bash scripts/PULSE_SOFTS/Weather.sh
+bash scripts/PULSE_SCF_SIMPLE/ETTh1.sh
+bash scripts/PULSE_SCF_SIMPLE/Weather.sh
+PRED_LENS=96 bash scripts/PULSE_SOFTS/ETTh1.sh
+```
+
+日志仍保存到 `logs/PULSE_SOFTS/<dataset>/<run_tag>/` 和 `logs/PULSE_SCF_SIMPLE/<dataset>/<run_tag>/`；默认每个脚本产生四个日志，终端打印每个时距对应的准确路径。不要将简单连接脚本当成尚未实现的独立 PULSE＋FACT。
 
 正式运行要求数据路径正确且 CUDA 环境可用。脚本语法与命令构造检查不替代真实训练结果。
 
@@ -169,7 +202,7 @@ PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/Weather.sh
 | P4 | 实现共享偏离与历史状态条件连接 | 条件信息来源明确，SAM 配对一致 | 开发检查通过 |
 | P5 | 必要检查 | 形状、有限梯度、推理行为、保存重载及旧代码保护通过 | 15 项新增检查及既有回归检查通过 |
 | P6 | 默认模型最小注册与脚本 | 仅改实验类的导入／注册，`run.py` 保持不变 | 已完成；新增 CLI 参数待额外确认 |
-| P7 | 单配置短流程 | 完成真实数据训练、验证、保存和测试链路 | 待运行 |
+| P7 | 单配置短流程 | 完成真实数据训练、验证、保存和测试链路 | 用户截图显示 PULSE_SCF 的 ETTh1 96→96 已完成；完整日志待归档，对照待运行 |
 | P8 | 首轮比较与分析 | 得到可复查指标，决定是否扩大实验 | 待运行 |
 
 不要将检查通过写成训练有效，也不要因尚未全面提升而自动终止本方向。围绕方法价值作取舍，避免铺开所有模块组合。
@@ -201,6 +234,7 @@ PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/Weather.sh
 | --- | --- |
 | 原 PULSE | 主要参照，保留默认 MLP 与对应训练协议 |
 | PULSE＋SOFTS | 区分骨干替换的影响 |
+| PULSE＋FACT（待实现） | 补齐用户明确的单独 FACT 基础组合；本次脚本不能代替该模型开发 |
 | PULSE＋SOFTS＋FACT 简单连接 | 在变量表示上直接接入 FACT 增量，作为连接方式对照 |
 | 完整 PULSE_SCF | 共享核心偏离构造＋历史参考状态条件修正 |
 
@@ -220,8 +254,10 @@ PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/Weather.sh
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 待确定 | 待确定 | 原 PULSE | 待确定 | 待运行 | 待运行 | 参照 | 待填写 |
 | 待确定 | 待确定 | PULSE＋SOFTS | 待确定 | 待运行 | 待运行 | 待计算 | 待填写 |
+| 待确定 | 待确定 | PULSE＋FACT | 待确定 | 待实现 | 待实现 | 待实现后比较 | 尚无模型与脚本 |
 | 待确定 | 待确定 | 简单 FACT 连接 | 待确定 | 待运行 | 待运行 | 待计算 | 待填写 |
 | 待确定 | 待确定 | 完整 PULSE_SCF | 待确定 | 待运行 | 待运行 | 待计算 | 待填写 |
+| ETTh1 | 96→96 | PULSE_SCF，服务器单次记录 | 1 次，种子待完整日志核对 | 约 0.3709 | 约 0.3985 | 待原 PULSE 同协议比较 | 用户截图，完整日志待归档；第 20 轮早停后测试 |
 
 对误差指标，相对差异定义为 `(新方法指标−参照指标)/参照指标`，正值表示误差增加。重复实验完成后记录均值与波动，不将单次试跑当成稳定结论。
 
@@ -277,6 +313,7 @@ PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/Weather.sh
 | 2026-10-29 | 笔记迁入主开发仓库 | 当前统一位置为 `PULSE-phy/notes/`，已同步根目录约束和相对链接 |
 | 2026-10-29 | 补充专属依赖清单 | 原基础清单漏列入口间接导入的 `einops`，新增 `requirements-scf.txt`，不修改原清单 |
 | 2026-10-29 | 修复 SCF 索引反向的严格确定性兼容 | 保留采样和模型参数，原 `run.py` 与来源副本不变；CPU 检查通过，目标 CUDA 环境待验证 |
+| 2026-10-29 | 明确基础组合的实现缺口并增加专用脚本 | 独立 PULSE＋FACT 尚未实现；仅为已实现的 PULSE_SOFTS、PULSE_SCF_SIMPLE 新增脚本，默认四个预测长度，Python 代码不变 |
 
 ## 11. 研究背景入口
 

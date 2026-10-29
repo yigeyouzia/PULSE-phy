@@ -4,7 +4,7 @@
 
 记录位置：`PULSE-phy/notes/`。目录已由用户移入主开发仓库，根目录开发约束见 [AGENTS.md](../../AGENTS.md)，工程内链接已按新位置修正。
 
-当前状态：三个模型版本、模块复制、最小注册和脚本已实现。新增 15 项检查通过，连同 8 项既有回归检查共 23 项通过。未运行真实数据的正式 GPU 训练，没有新的预测精度结论。
+当前状态：三个模型版本、模块复制、最小注册和脚本已实现。首版新增 15 项检查通过，连同 8 项既有回归检查共 23 项通过。后续用户服务器截图显示完整模型的 ETTh1 96→96 已完成单次训练与测试，完整日志及同协议基线比较仍待补齐，不能据此宣称性能提升。
 
 ## 1. 开发起点与保留内容
 
@@ -78,7 +78,7 @@ MODEL_NAME=PULSE_SCF_SIMPLE bash scripts/PULSE_SCF/ETTh1.sh
 PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/ETTh1.sh
 ```
 
-默认预测长度为 96。输入长度仍为 96，数据位置沿用原脚本的 `all_datasets/`，需要实际数据和 CUDA 环境。未确认的数据文件可用性不视为已满足。
+原 `PULSE_SCF/` 共享脚本默认预测长度为 96；新增专用脚本的默认范围见第 4.1 节。输入长度仍为 96，数据位置沿用原脚本的 `all_datasets/`，需要实际数据和 CUDA 环境。未确认的数据文件可用性不视为已满足。
 
 `MODEL_NAME` 和 `PRED_LENS` 是 shell 层的模型、长度选择，最终仍调用原入口的既有参数，不提供新的 SCF Python CLI 参数。`RUN_TAG` 默认使用 UTC 时间和进程号，用于独立日志和模型标识；如手动指定，应使用新的标识。已有日志受到禁止覆盖保护。
 
@@ -86,16 +86,16 @@ PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/ETTh1.sh
 
 ### 4.1 已开发模型、运行脚本与日志目录
 
-三个新模型共用数据集脚本，通过 `MODEL_NAME` 选择。下表以从工程根目录运行 ETTh1、默认预测 96 为例：
+当前提供共享脚本与模型专用脚本两种方式。新增 `PULSE_SOFTS/`、`PULSE_SCF_SIMPLE/` 专用脚本固定模型名，默认跑齐四个预测长度；原 `PULSE_SCF/` 共享脚本仍默认预测 96，并保留 `MODEL_NAME` 选择。下表从工程根目录运行：
 
 | 模型 | 作用 | 运行命令 | 预计日志目录 |
 | --- | --- | --- | --- |
-| `PULSE_SOFTS` | PULSE＋SOFTS 骨干对照 | `MODEL_NAME=PULSE_SOFTS bash scripts/PULSE_SCF/ETTh1.sh` | `logs/PULSE_SOFTS/ETTh1/<run_tag>/` |
-| `PULSE_SCF_SIMPLE` | SOFTS＋直接 FACT 增量对照 | `MODEL_NAME=PULSE_SCF_SIMPLE bash scripts/PULSE_SCF/ETTh1.sh` | `logs/PULSE_SCF_SIMPLE/ETTh1/<run_tag>/` |
+| `PULSE_SOFTS` | PULSE＋SOFTS 骨干对照 | `bash scripts/PULSE_SOFTS/ETTh1.sh` | `logs/PULSE_SOFTS/ETTh1/<run_tag>/` |
+| `PULSE_SCF_SIMPLE` | PULSE＋SOFTS＋直接 FACT 增量对照 | `bash scripts/PULSE_SCF_SIMPLE/ETTh1.sh` | `logs/PULSE_SCF_SIMPLE/ETTh1/<run_tag>/` |
 | `PULSE_SCF` | 共享核心偏离＋历史状态条件交互 | `bash scripts/PULSE_SCF/ETTh1.sh` | `logs/PULSE_SCF/ETTh1/<run_tag>/` |
 | `PULSE` | 原模型参照 | `MODEL_NAME=PULSE bash scripts/PULSE_SCF/ETTh1.sh` | `logs/PULSE/ETTh1/<run_tag>/` |
 
-Weather 使用 `scripts/PULSE_SCF/Weather.sh`，模型选择方式相同。其日志子目录使用原脚本变量 `weather`，为小写；ETTh1 子目录保留 `ETTh1` 大小写。
+Weather 使用对应模型目录下的 `Weather.sh`。其日志子目录使用原脚本变量 `weather`，为小写；ETTh1 子目录保留 `ETTh1` 大小写。新增专用脚本可通过 `PRED_LENS=96` 限定一次运行，模型名保持固定。
 
 每个预测长度单独生成一个文件，文件名规则为：
 
@@ -164,7 +164,9 @@ bash -n scripts/PULSE_SCF/Weather.sh
 
 ## 6. 当前待办
 
-1. 确定 ETTh1、Weather 的实际数据位置和可用 GPU 环境，先完成一个长度的真实短流程。
+独立的 PULSE＋FACT 还未实现；现有 `PULSE_SCF_SIMPLE` 同时包含 STAR 与 FACT，不代表这一基础对照。该组合后续单独开发，本次仅增加已实现模型的脚本。
+
+1. 归档服务器已完成的 PULSE_SCF、ETTh1 96→96 完整日志，继续运行两个对照及其他预测长度；Weather 另行完成首轮验证。
 2. 需要从 CLI 调节 SCF 专属配置时，先提出具体 `run.py` 改动并取得额外确认。
 3. 完成同协议的原 PULSE、骨干替换、简单连接与完整方法比较，将真实指标填入[开发计划的结果与分析部分](PULSE-SOFTS-FACT开发计划.md)。
 4. 基于结果决定继续、简化或修改机制，再开展必要的连接对照和相关工作区别核查。
@@ -229,3 +231,22 @@ bash scripts/PULSE_SCF/ETTh1.sh
 ```
 
 服务器 CUDA 可用时，`test_strict_deterministic_training_step_cuda` 应实际执行并显示 `ok`，不能用跳过替代 GPU 验证。正式结果仍待该环境重新训练后填写；现有其他服务器任务无需因本次代码修复被中止。
+
+## 9. 基础组合核对与专用运行脚本
+
+用户明确的基础组合为 PULSE＋SOFTS、PULSE＋FACT、PULSE＋SOFTS＋FACT。当前独立 PULSE＋FACT 尚未实现；`PULSE_SCF_SIMPLE` 属于含 STAR 的三者简单连接，不能代替这一缺失对照。
+
+本次不改变模型结构、代码组织或训练入口，只新增四个专用 shell 脚本：
+
+| 脚本 | 固定模型 | 默认预测长度 | 日志目录 |
+| --- | --- | --- | --- |
+| [PULSE_SOFTS/ETTh1.sh](../scripts/PULSE_SOFTS/ETTh1.sh) | PULSE_SOFTS | 96、192、336、720 | `logs/PULSE_SOFTS/ETTh1/<run_tag>/` |
+| [PULSE_SOFTS/Weather.sh](../scripts/PULSE_SOFTS/Weather.sh) | PULSE_SOFTS | 96、192、336、720 | `logs/PULSE_SOFTS/weather/<run_tag>/` |
+| [PULSE_SCF_SIMPLE/ETTh1.sh](../scripts/PULSE_SCF_SIMPLE/ETTh1.sh) | PULSE_SCF_SIMPLE | 96、192、336、720 | `logs/PULSE_SCF_SIMPLE/ETTh1/<run_tag>/` |
+| [PULSE_SCF_SIMPLE/Weather.sh](../scripts/PULSE_SCF_SIMPLE/Weather.sh) | PULSE_SCF_SIMPLE | 96、192、336、720 | `logs/PULSE_SCF_SIMPLE/weather/<run_tag>/` |
+
+专用脚本不读取 `MODEL_NAME`，以避免与其他实验的环境变量混淆。设置 `PRED_LENS=96` 可只跑一次。原 `scripts/PULSE_SCF/` 共享脚本保持不变，仍默认单个预测长度 96。
+
+四个新脚本均通过 Bash 语法、默认四时距、单时距选择、参数等价和实际日志路径捕获检查；这些检查使用临时命令捕获，不启动训练。逐项对比了全部 51 个既有 Python 文件的哈希，本次均未改变。
+
+另据用户提供的服务器截图，PULSE_SCF 在 ETTh1 96→96 上已运行至第 20 轮，连续 5 轮验证未改善后早停，随后完成测试：MSE 约 0.3709、MAE 约 0.3985。此处记录截图观察值，完整日志、实际环境和种子仍待归档；两个对照及独立 FACT 组合没有被这次运行验证。
