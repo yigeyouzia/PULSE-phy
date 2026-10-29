@@ -20,7 +20,7 @@
 | 训练流程 | 复用现有入口和实验流程，首轮采用非 AMP、单设备路径 |
 | 训练入口改动 | `run.py` 保持原样；默认配置通过实验类中的最小模型注册接入，新增 CLI 参数仍须额外确认 |
 | 主要比较参照 | 原 PULSE；补充 PULSE＋SOFTS 和简单连接以区分贡献 |
-| 当前数据范围 | ETTh1、Weather；暂不安排 Gje 大桥数据内容 |
+| 当前数据范围 | 脚本覆盖原仓库十二个标准数据集；首轮比较优先 ETTh1、Weather；不安排大桥数据内容 |
 
 “共享背景与偏离的协作可以减少重复交互、适应状态变化”是研究假设，尚未由本项目实验验证。新颖性需要与最近邻工作比较，不能将普通门控或共性分解本身当作已成立的新贡献。
 
@@ -114,9 +114,10 @@ $$
 | `PULSE-phy/models/PULSE_SCF_SIMPLE.py` | 已新增 | 对变量表示直接接入 FACT 增量的对照 |
 | `PULSE-phy/layers/pulse_scf/` | 已新增 | 来源模块副本、独立配置、SCF 扩展、条件连接与 backbone |
 | `PULSE-phy/layers/pulse_scf/deterministic.py` | 已新增 | 等价的核心选择与循环补齐，避免索引反向的 scatter／index-add 路径 |
-| `PULSE-phy/scripts/PULSE_SCF/` | 已新增 | 保持原数据集脚本名和配置格式，复用原训练入口 |
-| `PULSE-phy/scripts/PULSE_SOFTS/` | 已新增 | 固定 SOFTS 骨干对照的专用 ETTh1、Weather 脚本 |
-| `PULSE-phy/scripts/PULSE_SCF_SIMPLE/` | 已新增 | 固定 STAR＋FACT 简单连接的专用 ETTh1、Weather 脚本 |
+| `PULSE-phy/scripts/PULSE/` | 已新增 | 原模型参照，十二个数据集，保留根层旧脚本 |
+| `PULSE-phy/scripts/PULSE_SCF/` | 已补齐 | 十二个数据集，保持原配置格式，复用原训练入口 |
+| `PULSE-phy/scripts/PULSE_SOFTS/` | 已补齐 | SOFTS 骨干对照的十二个数据集脚本 |
+| `PULSE-phy/scripts/PULSE_SCF_SIMPLE/` | 已补齐 | STAR＋FACT 简单连接的十二个数据集脚本 |
 | `PULSE-phy/tests/test_pulse_scf.py` | 已新增 | 接口、梯度、训练配对、保存恢复及脚本检查 |
 | `PULSE-phy/tests/test_scf_deterministic.py` | 已新增 | 严格确定性下的等价性与训练步检查，CUDA 可用时执行 GPU 项 |
 | `PULSE-phy/exp/exp_main.py` | 已增加 4 行 | 1 行导入、3 个注册项；既有训练与评价逻辑保持原样 |
@@ -130,66 +131,43 @@ $$
 目前的入口与范围事项：
 
 1. 新 CLI 参数需要加入现有参数解析，属于 `run.py` 保护范围；本轮使用模型内独立默认值。
-2. 当前仅做 ETTh1 和 Weather，不安排 Gje 大桥数据适配、脚本或实验。
-3. 已通过脚本中的模型名和运行标识区分新实验，不修改原入口的实验命名函数。有效 SCF 配置保存在新模型检查点的 `_extra_state` 中，加载时校验配置匹配。
+2. 当前脚本补齐原仓库十二个标准数据集，不安排大桥数据适配、脚本或实验。
+3. 通过模型名和运行标识区分新实验，保持原入口实验命名函数。日志名使用模型与长度对；已有 `--checkpoints` 参数指定模型分类根目录。有效 SCF 配置保存在新模型检查点的 `_extra_state` 中。
 4. Mac 用于模型级检查，正式训练优先沿用已有 CUDA 路径。若扩展完整 CPU 训练或恢复逻辑，作为单独的工程适配记录，不计入结构贡献。
 
 任何入口修改都先提交具体改动说明，获得用户明确确认后才修改 `run.py`。本轮的默认模型注册和脚本检查不依赖入口修改；尚未进行真实数据训练，不能据此宣称 GPU 训练全流程已验证。
 
-### 5.1 运行脚本文件计划
+### 5.1 全部模型与数据集脚本
 
-| 交付脚本 | 对应原脚本 | 首轮范围 | 扩展范围 |
-| --- | --- | --- | --- |
-| `PULSE-phy/scripts/PULSE_SCF/ETTh1.sh` | `PULSE-phy/scripts/ETTh1.sh` | 历史 96、预测 96 | 按原脚本的配置支持预测 192、336、720 |
-| `PULSE-phy/scripts/PULSE_SCF/Weather.sh` | `PULSE-phy/scripts/Weather.sh` | 历史 96、预测 96 | 按原脚本的配置支持预测 192、336、720 |
-| `PULSE-phy/scripts/PULSE_SOFTS/ETTh1.sh` | `PULSE-phy/scripts/ETTh1.sh` | 默认顺序运行 96、192、336、720 | `PRED_LENS=96` 可单独试跑 |
-| `PULSE-phy/scripts/PULSE_SOFTS/Weather.sh` | `PULSE-phy/scripts/Weather.sh` | 默认顺序运行 96、192、336、720 | `PRED_LENS=96` 可单独试跑 |
-| `PULSE-phy/scripts/PULSE_SCF_SIMPLE/ETTh1.sh` | `PULSE-phy/scripts/ETTh1.sh` | 默认顺序运行 96、192、336、720 | `PRED_LENS=96` 可单独试跑 |
-| `PULSE-phy/scripts/PULSE_SCF_SIMPLE/Weather.sh` | `PULSE-phy/scripts/Weather.sh` | 默认顺序运行 96、192、336、720 | `PRED_LENS=96` 可单独试跑 |
+四个模型目录 `PULSE/`、`PULSE_SOFTS/`、`PULSE_SCF_SIMPLE/`、`PULSE_SCF/` 各提供十二个数据集脚本，共 48 个文件。完整文件链接、数据文件位置和预测长度见[模型数据集脚本与输出索引](模型数据集脚本与输出索引.md)。
 
-脚本复制对应原脚本的变量和续行命令结构，保留各预测长度对应的 Router、周期和训练参考设置。仅调整模型选择、独立日志与运行标识，并加入少量 shell 长度筛选。默认只运行预测 96；其他长度通过 shell 配置选择。
+数据集为 ETTh1、ETTh2、ETTm1、ETTm2、electricity、traffic、Weather、Solar、PEMS03、PEMS04、PEMS07、PEMS08；不包括大桥数据。默认保留原脚本的四个预测长度：普通长预测为 96、192、336、720，PEMS 为 12、24、48、96。独立 PULSE＋FACT 尚未实现，不创建其占位运行脚本。
 
-上述单长度默认针对原 `scripts/PULSE_SCF/` 共享脚本。新增的 `PULSE_SOFTS/` 与 `PULSE_SCF_SIMPLE/` 专用脚本默认跑齐四个预测长度，模型名固定，不读取 `MODEL_NAME`；实际训练参数与共享脚本选择相同模型、相同时距时一致，不修改任何 Python 文件或原共享脚本。
-
-对照通过显式模型名 `PULSE_SOFTS`、`PULSE_SCF_SIMPLE`、`PULSE_SCF` 选择，`MODEL_NAME=PULSE` 可运行原模型参照。沿用同一组数据脚本，不另建 Python 训练入口。第一版脚本只传现有 `run.py` 已支持的参数，SCF 专属参数使用模型内独立默认值；可调命令行接入另行确认。当前两个公开数据脚本通过最小模型注册接入原流程，不以修改 `run.py` 为前提。
-
-脚本命令（已通过语法和参数构造检查，从 `PULSE-phy/` 运行）：
+原脚本顶部变量与续行 `python -u run.py` 格式保持一致，逐时距保留 Router、周期、批量、学习率、种子和训练设置。只改变模型选择、独立模型标识及 checkpoint 根目录；不改变 Python 模型或原训练入口。
 
 ```bash
-bash scripts/PULSE_SCF/ETTh1.sh
-MODEL_NAME=PULSE_SOFTS bash scripts/PULSE_SCF/ETTh1.sh
-MODEL_NAME=PULSE_SCF_SIMPLE bash scripts/PULSE_SCF/ETTh1.sh
-PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/Weather.sh
+bash scripts/PULSE_SCF/electricity.sh
+bash scripts/PULSE_SOFTS/ETTm2.sh
+bash scripts/PULSE_SCF_SIMPLE/traffic.sh
+bash scripts/PULSE/ETTh1.sh
+PRED_LENS="96 192" bash scripts/PULSE_SCF/Weather.sh
+PRED_LENS="12 24" bash scripts/PULSE_SCF/PEMS03.sh
 ```
 
-新增专用脚本从工程根目录直接运行，无需再指定模型名：
+### 5.2 日志、checkpoint 与预计目录
 
-```bash
-bash scripts/PULSE_SOFTS/ETTh1.sh
-bash scripts/PULSE_SOFTS/Weather.sh
-bash scripts/PULSE_SCF_SIMPLE/ETTh1.sh
-bash scripts/PULSE_SCF_SIMPLE/Weather.sh
-PRED_LENS=96 bash scripts/PULSE_SOFTS/ETTh1.sh
+按用户最新示例，日志使用 `<ModelName>_<seq_len>_<pred_len>.log`，例如 `PULSE_SCF_96_96.log`、`PULSE_SCF_96_192.log`，不追加时间或其他后缀。数据集和运行标识保留在目录中，避免同名覆盖。改日志名不意味着只运行 96、192 两个预测长度。
+
+```text
+logs/<ModelName>/<dataset>/<run_tag>/<ModelName>_<seq_len>_<pred_len>.log
+checkpoints/<ModelName>/<setting>/checkpoint.pth
 ```
 
-日志仍保存到 `logs/PULSE_SOFTS/<dataset>/<run_tag>/` 和 `logs/PULSE_SCF_SIMPLE/<dataset>/<run_tag>/`；默认每个脚本产生四个日志，终端打印每个时距对应的准确路径。不要将简单连接脚本当成尚未实现的独立 PULSE＋FACT。
+脚本通过既有参数 `--checkpoints ./checkpoints/<ModelName>/` 指定模型分类目录，`setting` 和 `checkpoint.pth` 保持原入口与保存逻辑。当前训练后自动测试无需改 Python 代码；旧 `--is_training 0` 独立测试加载分支写死了原根路径，尚未适配新分类，若需要须另行修改和验证。
 
-正式运行要求数据路径正确且 CUDA 环境可用。脚本语法与命令构造检查不替代真实训练结果。
+终端打印准确日志路径、查看命令和 checkpoint 根目录。完整预计 tree 见工作区[开发约束第 9 节](../../AGENTS.md#9-输出目录格式与预计结构)，历史日志和 checkpoint 不自动迁移。
 
-### 5.2 预计日志位置
-
-日志根目录为 `PULSE-phy/logs/<ModelName>/<dataset>/<run_tag>/`，文件名为 `<ModelName>_<dataset>_96_<pred_len>_<run_tag>.log`。ETTh1 的目录标识为 `ETTh1`，Weather 沿用原脚本的小写 `weather`。
-
-| 模型选择 | ETTh1 日志目录 | Weather 日志目录 |
-| --- | --- | --- |
-| `PULSE_SOFTS` | `logs/PULSE_SOFTS/ETTh1/<run_tag>/` | `logs/PULSE_SOFTS/weather/<run_tag>/` |
-| `PULSE_SCF_SIMPLE` | `logs/PULSE_SCF_SIMPLE/ETTh1/<run_tag>/` | `logs/PULSE_SCF_SIMPLE/weather/<run_tag>/` |
-| `PULSE_SCF`（默认） | `logs/PULSE_SCF/ETTh1/<run_tag>/` | `logs/PULSE_SCF/weather/<run_tag>/` |
-| `PULSE`（原模型） | `logs/PULSE/ETTh1/<run_tag>/` | `logs/PULSE/weather/<run_tag>/` |
-
-脚本在启动每个预测长度前会在终端打印该日志的绝对路径和 `tail -f` 命令。训练标准输出与错误继续重定向到日志文件，不改变原 `run.py`。完整运行示例、固定标识与实时查看方式见[开发记录第 4 节](PULSE-SCF开发记录.md#4-脚本交付与使用)。
-
-依赖安装清单为 `PULSE-phy/requirements-scf.txt`；从主工程根目录运行 `python -m pip install -r requirements-scf.txt`，安装与训练使用同一个 Python 解释器。原 `requirements.txt` 保留原样。当前路线不需要额外安装大桥数据依赖；新模型本身未引入额外的深度学习框架。
+依赖清单为 `requirements-scf.txt`，从工程根目录使用同一解释器执行 `python -m pip install -r requirements-scf.txt`。正式训练需要实际数据与对应 GPU 环境，参数与随机张量检查不替代真实结果。
 
 ## 6. 开发顺序与阶段验收
 
@@ -314,6 +292,7 @@ PRED_LENS=96 bash scripts/PULSE_SOFTS/ETTh1.sh
 | 2026-10-29 | 补充专属依赖清单 | 原基础清单漏列入口间接导入的 `einops`，新增 `requirements-scf.txt`，不修改原清单 |
 | 2026-10-29 | 修复 SCF 索引反向的严格确定性兼容 | 保留采样和模型参数，原 `run.py` 与来源副本不变；CPU 检查通过，目标 CUDA 环境待验证 |
 | 2026-10-29 | 明确基础组合的实现缺口并增加专用脚本 | 独立 PULSE＋FACT 尚未实现；仅为已实现的 PULSE_SOFTS、PULSE_SCF_SIMPLE 新增脚本，默认四个预测长度，Python 代码不变 |
+| 2026-10-29 | 补齐四模型与十二数据集的 48 个脚本并统一输出 | 日志仅保留模型和长度对；checkpoint 增加模型分类层，使用已有参数；模型与训练代码不变，原根层脚本和历史输出不迁移 |
 
 ## 11. 研究背景入口
 

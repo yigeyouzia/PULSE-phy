@@ -223,6 +223,10 @@ class SCFTests(unittest.TestCase):
 
 class SCFScriptTests(unittest.TestCase):
     root = Path(__file__).resolve().parents[1]
+    models = ("PULSE", "PULSE_SOFTS", "PULSE_SCF_SIMPLE", "PULSE_SCF")
+    datasets = ("ETTh1.sh", "ETTh2.sh", "ETTm1.sh", "ETTm2.sh", "PEMS03.sh",
+                "PEMS04.sh", "PEMS07.sh", "PEMS08.sh", "Solar.sh", "Weather.sh",
+                "electricity.sh", "traffic.sh")
 
     def scf_run_script(self, script, directory, **environment):
         directory = Path(directory)
@@ -266,31 +270,41 @@ class SCFScriptTests(unittest.TestCase):
 
     def test_scripts_preserve_source_horizon_configs_and_existing_flags(self):
         parser = self.scf_original_parser()
-        for filename in ("ETTh1.sh", "Weather.sh"):
-            with tempfile.TemporaryDirectory() as old_dir, tempfile.TemporaryDirectory() as new_dir:
+        for filename in self.datasets:
+            with tempfile.TemporaryDirectory() as old_dir:
                 result, original = self.scf_run_script(self.root / "scripts" / filename, old_dir)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                result, commands = self.scf_run_script(
-                    self.root / "scripts/PULSE_SCF" / filename, new_dir,
-                    PRED_LENS="96 192 336 720",
-                )
-                self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertEqual(len(commands), 4)
-                for old, new in zip(original, commands):
-                    self.assertEqual(new[:2], ["-u", "run.py"])
-                    old_args = vars(parser.parse_args(old[2:]))
-                    new_args = vars(parser.parse_args(new[2:]))
-                    self.assertEqual(new_args["model"], "PULSE_SCF")
-                    self.assertIn("argument_check", new_args["model_id"])
-                    for key in old_args.keys() - {"model", "model_id"}:
-                        self.assertEqual(new_args[key], old_args[key], (filename, key))
+            for model in self.models:
+                with self.subTest(model=model, dataset=filename), tempfile.TemporaryDirectory() as new_dir:
+                    script = self.root / "scripts" / model / filename
+                    subprocess.run(["bash", "-n", str(script)], check=True)
+                    result, commands = self.scf_run_script(script, new_dir)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertEqual(len(commands), len(original))
+                    logs = [Path(line[len("Log: "):]) for line in result.stdout.splitlines()
+                            if line.startswith("Log: ")]
+                    self.assertEqual(len(logs), len(commands))
+                    for old, new, log in zip(original, commands, logs):
+                        self.assertEqual(new[:2], ["-u", "run.py"])
+                        old_args = vars(parser.parse_args(old[2:]))
+                        new_args = vars(parser.parse_args(new[2:]))
+                        self.assertEqual(new_args["model"], model)
+                        self.assertIn("argument_check", new_args["model_id"])
+                        self.assertEqual(new_args["checkpoints"], "./checkpoints/" + model + "/")
+                        for key in old_args.keys() - {"model", "model_id", "checkpoints"}:
+                            self.assertEqual(new_args[key], old_args[key], (filename, key))
+                        self.assertEqual(log.name, "{}_{}_{}.log".format(
+                            model, new_args["seq_len"], new_args["pred_len"]))
+                        self.assertTrue(log.is_absolute() and log.is_file())
+                        self.assertIn("/logs/" + model + "/", str(log))
 
-    def test_script_defaults_and_explicit_model_controls(self):
+    def test_shared_script_model_controls_and_single_horizon(self):
         parser = self.scf_original_parser()
         for model in ("PULSE", "PULSE_SOFTS", "PULSE_SCF_SIMPLE", "PULSE_SCF"):
             with tempfile.TemporaryDirectory() as directory:
                 result, commands = self.scf_run_script(
-                    self.root / "scripts/PULSE_SCF/ETTh1.sh", directory, MODEL_NAME=model,
+                    self.root / "scripts/PULSE_SCF/ETTh1.sh", directory,
+                    MODEL_NAME=model, PRED_LENS="96",
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(len(commands), 1)
@@ -304,7 +318,7 @@ class SCFScriptTests(unittest.TestCase):
                 self.assertTrue(announced.is_absolute())
                 self.assertTrue(announced.is_file())
                 expected = (Path(directory) / "logs" / model / "ETTh1" / "argument_check"
-                            / (model + "_ETTh1_96_96_argument_check.log"))
+                            / (model + "_96_96.log"))
                 self.assertEqual(announced.resolve(), expected.resolve())
                 self.assertIn("Watch: tail -f ", result.stdout)
 
@@ -331,6 +345,20 @@ class SCFScriptTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 2)
                 self.assertEqual(commands, [])
+
+    def test_pems_keeps_source_short_term_horizons(self):
+        parser = self.scf_original_parser()
+        script = self.root / "scripts/PULSE_SCF/PEMS03.sh"
+        with tempfile.TemporaryDirectory() as directory:
+            result, commands = self.scf_run_script(script, directory, PRED_LENS="12 48")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual([parser.parse_args(c[2:]).pred_len for c in commands], [12, 48])
+            logs = list((Path(directory) / "logs").rglob("*.log"))
+            self.assertEqual({p.name for p in logs}, {"PULSE_SCF_96_12.log", "PULSE_SCF_96_48.log"})
+        with tempfile.TemporaryDirectory() as directory:
+            result, commands = self.scf_run_script(script, directory, PRED_LENS="192")
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(commands, [])
 
 
 if __name__ == "__main__":

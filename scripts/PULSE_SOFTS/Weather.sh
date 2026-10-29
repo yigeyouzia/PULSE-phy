@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Source layout/configuration: scripts/Weather.sh. Run from the repository root.
 # Source SHA256: 9656df40519aa1546003a5c9a0cdbf5b327223a443c69bb7b37c9e1fcd41f2dc
-# Default: prediction lengths 96 192 336 720. Use PRED_LENS=96 for a single run.
+# Default prediction lengths: 96 192 336 720. Use PRED_LENS to select a subset.
+# Log name: <ModelName>_<seq_len>_<pred_len>.log; run identity stays in the directory.
+# Fixed model; this script does not read MODEL_NAME.
 # SCF-specific dimensions use independent model defaults; no new run.py flags.
-# Fixed model: PULSE_SOFTS. This dedicated script does not read MODEL_NAME.
 set -euo pipefail
 set -o noclobber
 
@@ -22,7 +23,7 @@ esac
 for horizon in "${scf_pred_lens[@]}"; do
     case "$horizon" in
         96|192|336|720) ;;
-        *) printf 'Unsupported prediction length: %s\n' "$horizon" >&2; exit 2 ;;
+        *) printf 'Unsupported prediction length for weather: %s\n' "$horizon" >&2; exit 2 ;;
     esac
 done
 if [ ! -f run.py ]; then
@@ -38,9 +39,8 @@ scf_selected() {
     return 1
 }
 
-
 scf_log_path() {
-    printf '%s/%s_%s_%s_%s_%s.log' "$dir" "$model_name" "$model_id_name" "$seq_len" "$1" "$run_tag"
+    printf '%s/%s_%s_%s.log' "$dir" "$model_name" "$seq_len" "$1"
 }
 
 scf_announce_log() {
@@ -48,9 +48,11 @@ scf_announce_log() {
     printf '[%s] %s: %s -> %s\n' "$model_name" "$data_name" "$seq_len" "$pred_len"
     printf 'Log: %s\n' "$absolute_log"
     printf 'Watch: tail -f %q\n' "$absolute_log"
+    printf 'Checkpoint root: %s/%s\n' "$PWD" "${checkpoint_dir#./}"
 }
 
 dir=./logs/${model_name}/${model_id_name}/${run_tag}
+checkpoint_dir=./checkpoints/${model_name}/
 mkdir -p "$dir"
 
 root_path_name=./all_datasets/
@@ -87,6 +89,7 @@ if scf_selected "$pred_len"; then
         --data_path $data_path_name \
         --model_id "${model_name}_${model_id_name}_${seq_len}_${pred_len}_${run_tag}" \
         --model $model_name \
+        --checkpoints "$checkpoint_dir" \
         --data $data_name \
         --features M \
         --seq_len $seq_len \
@@ -125,6 +128,7 @@ if scf_selected "$pred_len"; then
         --data_path $data_path_name \
         --model_id "${model_name}_${model_id_name}_${seq_len}_${pred_len}_${run_tag}" \
         --model $model_name \
+        --checkpoints "$checkpoint_dir" \
         --data $data_name \
         --features M \
         --seq_len $seq_len \
@@ -163,6 +167,7 @@ if scf_selected "$pred_len"; then
         --data_path $data_path_name \
         --model_id "${model_name}_${model_id_name}_${seq_len}_${pred_len}_${run_tag}" \
         --model $model_name \
+        --checkpoints "$checkpoint_dir" \
         --data $data_name \
         --features M \
         --seq_len $seq_len \
@@ -201,6 +206,7 @@ if scf_selected "$pred_len"; then
         --data_path $data_path_name \
         --model_id "${model_name}_${model_id_name}_${seq_len}_${pred_len}_${run_tag}" \
         --model $model_name \
+        --checkpoints "$checkpoint_dir" \
         --data $data_name \
         --features M \
         --seq_len $seq_len \

@@ -65,70 +65,49 @@ SAM 使用原抽样的同一个系数和样本索引配对。新增门控条件�
 
 ## 4. 脚本交付与使用
 
-脚本保持原数据集文件名、顶部配置变量和 `python -u run.py` 续行格式。四个预测长度的原始参数已逐项对比，除模型名和独立模型标识外保持一致。
+当前已提供四个已实现模型 × 十二个标准数据集，共 48 份脚本。目录为 `scripts/<ModelName>/`，文件名与原仓库对应数据集一致。完整矩阵及每个文件链接见[脚本与输出索引](模型数据集脚本与输出索引.md)。原根层脚本保留原样。
 
-从 `PULSE-phy/` 根目录运行：
+四个模型为 PULSE、PULSE_SOFTS、PULSE_SCF_SIMPLE、PULSE_SCF；独立 PULSE＋FACT 尚未实现，PULSE_SCF_SIMPLE 同时包含 STAR 和 FACT。
+
+从工程根目录运行，例如：
 
 ```bash
 bash scripts/PULSE_SCF/ETTh1.sh
-bash scripts/PULSE_SCF/Weather.sh
-MODEL_NAME=PULSE bash scripts/PULSE_SCF/ETTh1.sh
-MODEL_NAME=PULSE_SOFTS bash scripts/PULSE_SCF/ETTh1.sh
-MODEL_NAME=PULSE_SCF_SIMPLE bash scripts/PULSE_SCF/ETTh1.sh
-PRED_LENS="96 192 336 720" bash scripts/PULSE_SCF/ETTh1.sh
+bash scripts/PULSE_SOFTS/Weather.sh
+bash scripts/PULSE_SCF_SIMPLE/traffic.sh
+bash scripts/PULSE/electricity.sh
+PRED_LENS="96 192" bash scripts/PULSE_SCF/ETTm1.sh
+PRED_LENS="12 24" bash scripts/PULSE_SCF/PEMS03.sh
 ```
 
-原 `PULSE_SCF/` 共享脚本默认预测长度为 96；新增专用脚本的默认范围见第 4.1 节。输入长度仍为 96，数据位置沿用原脚本的 `all_datasets/`，需要实际数据和 CUDA 环境。未确认的数据文件可用性不视为已满足。
+每个脚本默认运行原仓库为该数据集配置的四个时距；PEMS 为 12、24、48、96，其他为 96、192、336、720，输入均为 96。`PULSE_SCF/` 保留 `MODEL_NAME` 选择的兼容用法，其他模型目录固定模型名。
 
-`MODEL_NAME` 和 `PRED_LENS` 是 shell 层的模型、长度选择，最终仍调用原入口的既有参数，不提供新的 SCF Python CLI 参数。`RUN_TAG` 默认使用 UTC 时间和进程号，用于独立日志和模型标识；如手动指定，应使用新的标识。已有日志受到禁止覆盖保护。
-
-日志位于 `logs/<ModelName>/<dataset>/<run_tag>/`；检查点和结果沿用原入口的目录规则，模型标识包含新模型名和运行标识。脚本会传递失败状态并保存标准错误，任何一次训练失败会停止后续长度。
-
-### 4.1 已开发模型、运行脚本与日志目录
-
-当前提供共享脚本与模型专用脚本两种方式。新增 `PULSE_SOFTS/`、`PULSE_SCF_SIMPLE/` 专用脚本固定模型名，默认跑齐四个预测长度；原 `PULSE_SCF/` 共享脚本仍默认预测 96，并保留 `MODEL_NAME` 选择。下表从工程根目录运行：
-
-| 模型 | 作用 | 运行命令 | 预计日志目录 |
-| --- | --- | --- | --- |
-| `PULSE_SOFTS` | PULSE＋SOFTS 骨干对照 | `bash scripts/PULSE_SOFTS/ETTh1.sh` | `logs/PULSE_SOFTS/ETTh1/<run_tag>/` |
-| `PULSE_SCF_SIMPLE` | PULSE＋SOFTS＋直接 FACT 增量对照 | `bash scripts/PULSE_SCF_SIMPLE/ETTh1.sh` | `logs/PULSE_SCF_SIMPLE/ETTh1/<run_tag>/` |
-| `PULSE_SCF` | 共享核心偏离＋历史状态条件交互 | `bash scripts/PULSE_SCF/ETTh1.sh` | `logs/PULSE_SCF/ETTh1/<run_tag>/` |
-| `PULSE` | 原模型参照 | `MODEL_NAME=PULSE bash scripts/PULSE_SCF/ETTh1.sh` | `logs/PULSE/ETTh1/<run_tag>/` |
-
-Weather 使用对应模型目录下的 `Weather.sh`。其日志子目录使用原脚本变量 `weather`，为小写；ETTh1 子目录保留 `ETTh1` 大小写。新增专用脚本可通过 `PRED_LENS=96` 限定一次运行，模型名保持固定。
-
-每个预测长度单独生成一个文件，文件名规则为：
+### 4.1 日志和 checkpoint 位置
 
 ```text
-<ModelName>_<dataset>_96_<pred_len>_<run_tag>.log
+logs/<ModelName>/<dataset>/<run_tag>/<ModelName>_<seq_len>_<pred_len>.log
+checkpoints/<ModelName>/<setting>/checkpoint.pth
 ```
 
-本机完整模型的预计日志路径为：
+例如 `logs/PULSE_SCF/ETTh1/<run_tag>/PULSE_SCF_96_96.log`、`logs/PULSE_SCF/weather/<run_tag>/PULSE_SCF_96_192.log`。文件名到长度对为止，不再追加时间戳；模型、数据集及运行目录继续隔离实验。Weather 的日志目录保留小写 `weather`。
 
-```text
-/Users/cyt/projects/i/pinn-code/PULSE-phy/logs/PULSE_SCF/ETTh1/<run_tag>/PULSE_SCF_ETTh1_96_96_<run_tag>.log
-/Users/cyt/projects/i/pinn-code/PULSE-phy/logs/PULSE_SCF/weather/<run_tag>/PULSE_SCF_weather_96_96_<run_tag>.log
-```
+每个时距启动前打印模型、数据集、长度、日志绝对路径、`tail -f` 命令以及 checkpoint 根目录。训练标准输出与错误仍通过 `> "$log_file" 2>&1` 写入文件，早停及失败状态沿用现有逻辑。
 
-`<run_tag>` 默认由 UTC 时间与进程号生成，实际运行时不保留尖括号。每次执行脚本，终端会先打印模型、数据集、输入与预测长度、日志绝对路径，以及可直接复制的 `tail -f` 命令；训练输出与报错仍通过 `> "$log_file" 2>&1` 写入该文件。
+checkpoint 分组只增加模型分类层，使用已有 `--checkpoints` 参数，不改 `run.py`。训练结束后的最佳权重恢复与自动测试支持该配置；独立 `--is_training 0` 分支仍硬编码旧路径，尚未适配这一新分组。
 
-### 4.2 指定标识与实时查看
-
-例如，在工程根目录用一个新的固定标识运行：
+### 4.2 固定标识与查看
 
 ```bash
-RUN_TAG=etth1_scf_001 bash scripts/PULSE_SCF/ETTh1.sh
+RUN_TAG=etth1_scf_001 PRED_LENS=96 bash scripts/PULSE_SCF/ETTh1.sh
 ```
 
-可在另一个终端查看：
+从另一终端查看：
 
 ```bash
-tail -f /Users/cyt/projects/i/pinn-code/PULSE-phy/logs/PULSE_SCF/ETTh1/etth1_scf_001/PULSE_SCF_ETTh1_96_96_etth1_scf_001.log
+tail -f /Users/cyt/projects/i/pinn-code/PULSE-phy/logs/PULSE_SCF/ETTh1/etth1_scf_001/PULSE_SCF_96_96.log
 ```
 
-该标识是用法示例，不表示已经执行或生成结果。再次运行时换用新标识，避免触发已有日志的防覆盖保护。选择多个预测长度时，同一运行目录内分别保存 96、192、336、720 的日志。
-
-日志预期包含启动参数、设备、数据窗口数量、训练轮次和验证损失，训练及测试成功后包含最终 MSE／MAE；若启动失败，则在同一文件中保留 traceback。创建日志文件不等于已经开始训练。此前本机启动尝试因缺少 `all_datasets/ETTh1.csv` 在读取数据时退出，没有产生训练指标。
+此标识仅为示例，不表示已经产生结果；再次运行请使用新的标识，已有日志禁止覆盖。历史日志和 checkpoint 不自动更名或迁移。数据文件仍放在原 `all_datasets/`，以实际脚本中的文件名为准。
 
 ## 5. 开发检查记录
 
@@ -145,8 +124,8 @@ tail -f /Users/cyt/projects/i/pinn-code/PULSE-phy/logs/PULSE_SCF/ETTh1/etth1_scf
 | 门控仅由历史状态决定 | 通过；改变未来时间标记不会改变门控值 |
 | 检查点保存、重载和配置不匹配保护 | 通过 |
 | 原实验类注册及验证流程 | 原 PULSE 与三个新模型均通过 |
-| 两个脚本的 Bash 语法 | 通过 |
-| 两个脚本四个长度的原始参数对比 | 通过；使用命令捕获检查，不启动训练 |
+| 当前 48 个模型／数据集脚本的 Bash 语法 | 通过 |
+| 当前 192 条模型／数据集／时距命令参数 | 通过；仅模型、独立标识和 checkpoint 根目录按计划变化 |
 | 脚本默认长度、显式对照、失败传递及防覆盖 | 通过 |
 | 原 `run.py --help` | 通过 |
 | 来源模块原文与副本哈希 | 通过 |
@@ -245,8 +224,20 @@ bash scripts/PULSE_SCF/ETTh1.sh
 | [PULSE_SCF_SIMPLE/ETTh1.sh](../scripts/PULSE_SCF_SIMPLE/ETTh1.sh) | PULSE_SCF_SIMPLE | 96、192、336、720 | `logs/PULSE_SCF_SIMPLE/ETTh1/<run_tag>/` |
 | [PULSE_SCF_SIMPLE/Weather.sh](../scripts/PULSE_SCF_SIMPLE/Weather.sh) | PULSE_SCF_SIMPLE | 96、192、336、720 | `logs/PULSE_SCF_SIMPLE/weather/<run_tag>/` |
 
-专用脚本不读取 `MODEL_NAME`，以避免与其他实验的环境变量混淆。设置 `PRED_LENS=96` 可只跑一次。原 `scripts/PULSE_SCF/` 共享脚本保持不变，仍默认单个预测长度 96。
+专用脚本不读取 `MODEL_NAME`，以避免与其他实验的环境变量混淆。设置 `PRED_LENS=96` 可只跑一次。该阶段原共享脚本仍默认单个预测长度 96；本次完整脚本补齐后统一按原数据集四个时距运行，以第 10 节为准。
 
 四个新脚本均通过 Bash 语法、默认四时距、单时距选择、参数等价和实际日志路径捕获检查；这些检查使用临时命令捕获，不启动训练。逐项对比了全部 51 个既有 Python 文件的哈希，本次均未改变。
 
 另据用户提供的服务器截图，PULSE_SCF 在 ETTh1 96→96 上已运行至第 20 轮，连续 5 轮验证未改善后早停，随后完成测试：MSE 约 0.3709、MAE 约 0.3985。此处记录截图观察值，完整日志、实际环境和种子仍待归档；两个对照及独立 FACT 组合没有被这次运行验证。
+
+## 10. 全数据集脚本与输出目录统一
+
+2026-10-29，按用户最新要求补齐四个已实现模型与十二个标准数据集的全部 48 个脚本，详见[完整索引](模型数据集脚本与输出索引.md)。不扩展尚未实现的独立 PULSE＋FACT，也不加入大桥数据。
+
+日志使用模型名加长度对，例如 `PULSE_SCF_96_96.log`、`PULSE_SCF_96_192.log`，到长度对为止，不追加数据集、时间或进程号；目录仍保留模型、数据集和运行标识，避免同名冲突。保留全部原时距，命名精简不裁剪实验。
+
+checkpoint 增加模型名分类层，通过现有 `--checkpoints ./checkpoints/<ModelName>/` 指定，得到 `checkpoints/<ModelName>/<setting>/checkpoint.pth`。训练、最佳权重恢复和自动测试使用既有流程。旧独立测试加载分支的硬编码根路径仍需另行适配，本轮未修改。
+
+本轮修改 shell、配套脚本测试和文档，未修改模型或 Python 训练代码。所有原仓库根层脚本、历史日志、历史 checkpoint 保留原样；新规则从下一次使用模型目录内的脚本运行起生效。
+
+本次检查：48 个脚本的语法、192 条命令与来源配置的比较、短文件名及模型 checkpoint 参数全部通过。四模型 × 十二数据集配置 × 四时距的 192 项随机张量 CPU 前向检查均输出正确形状和有限数值。SCF 专属回归共 21 项，其中 20 项通过，CUDA 项因本机无 NVIDIA GPU 跳过。以上不代表全部数据集已完成正式 GPU 训练。
