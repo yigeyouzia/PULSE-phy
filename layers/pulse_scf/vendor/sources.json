@@ -1,0 +1,50 @@
+{
+  "created": "2026-10-29",
+  "sources": [
+    {
+      "source": "SOFTS-main/models/SOFTS.py",
+      "source_sha256": "71cd0b1d72055ff71a313139bf1e9801351f7798c7b392f679a3befd7c2f16e1",
+      "copied_file": "softs_star.py",
+      "copied_sha256": "bcb5c47f6a80a10f526e0a7648a363e196f19bb0dba883701559a75223d8e58f",
+      "selection": [
+        "STAR"
+      ],
+      "changes": "Added provenance header; selected classes retain exact source text; only required imports copied.",
+      "source_kind": "ZIP extraction; commit unknown"
+    },
+    {
+      "source": "SOFTS-main/layers/Embed.py",
+      "source_sha256": "46b79fb6970000d721297f9a368a3269b66b1a6fbb723d649bd63a2859d0fe3b",
+      "copied_file": "softs_embedding.py",
+      "copied_sha256": "461a882efd20b5ea83308fb3f5801def62a0da367b1388b300725bcbb8b9dbd7",
+      "selection": "entire module",
+      "changes": "Added provenance header; original module body unchanged.",
+      "source_kind": "ZIP extraction; commit unknown"
+    },
+    {
+      "source": "SOFTS-main/layers/Transformer_EncDec.py",
+      "source_sha256": "5b02b4aa9ae14d2e4ac3951a84f53011f5d15586f7a6e4a1e2a355e8e5309e7f",
+      "copied_file": "softs_encoder.py",
+      "copied_sha256": "5a408ad6f2d04cbf179edc07b38753ec4098a63cc2c45af3d425fae480cc888d",
+      "selection": "entire module",
+      "changes": "Added provenance header; original module body unchanged.",
+      "source_kind": "ZIP extraction; commit unknown"
+    },
+    {
+      "source": "FACT-main/models/FACT.py",
+      "source_sha256": "43e433220a204461b6bb579ef6a4d802be3ac0b8c4eea15c0880cdc393dba831",
+      "copied_file": "fact_conv.py",
+      "copied_sha256": "acc2cc4bc5f1d840cdc6b9a10d46a41928e0c36348ecae685244db6def4ace94",
+      "selection": [
+        "Inception2d",
+        "Conv_block2d"
+      ],
+      "changes": "Added provenance header; selected classes retain exact source text; only required imports copied.",
+      "source_kind": "ZIP extraction; commit unknown"
+    }
+  ],
+  "licenses": [
+    "SOFTS_LICENSE",
+    "FACT_LICENSE"
+  ]
+}

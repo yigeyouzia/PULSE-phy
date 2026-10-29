@@ -1,0 +1,4 @@
+# PULSE_SOFTS / PULSE_SCF_SIMPLE / PULSE_SCF runtime for ETTh1 and Weather.
+# Keep the original dependency list; add the import needed by exp_main -> PatchTST.
+-r requirements.txt
+einops
