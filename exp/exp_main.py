@@ -3,6 +3,7 @@ from exp.exp_basic import Exp_Basic
 
 from models import Autoformer, DLinear, PatchTST,iTransformer,CycleNet,TimeXer,TimesNet,PULSE
 from models import PULSE_SOFTS, PULSE_SCF_SIMPLE, PULSE_SCF
+from models import PULSE_FACT
 from utils.polynomial import (chebyshev_torch, hermite_torch, laguerre_torch,
                               leg_torch)
 from utils.tools import EarlyStopping, adjust_learning_rate, visual, test_params_flop
@@ -50,6 +51,7 @@ class Exp_Main(Exp_Basic):
             'DLinear': DLinear,
             'PatchTST': PatchTST,
             'PULSE': PULSE,
+            'PULSE_FACT': PULSE_FACT,
             'PULSE_SOFTS': PULSE_SOFTS,
             'PULSE_SCF_SIMPLE': PULSE_SCF_SIMPLE,
             'PULSE_SCF': PULSE_SCF,

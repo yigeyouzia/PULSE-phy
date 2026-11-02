@@ -1,6 +1,8 @@
 # PULSE 框架下 SOFTS 与 FACT 融合开发计划
 
-创建与更新日期：2026-10-29。状态：首版代码、模型注册和脚本已完成；用户服务器截图已显示 PULSE_SCF 的 ETTh1 96→96 单次训练与测试完成，同协议基线比较尚未完成。具体实现与验证见[开发记录](PULSE-SCF开发记录.md)。
+创建日期：2026-10-29；结果更新日期：2026-11-02。状态：四模型、十二个标准数据集共 192 组单种子训练测试日志已完成整理。PULSE_SCF 的收益主要集中在 PEMS，其他数据集存在退化；重复实验和机制拆分尚未完成。结果见[四模型汇总](../logs/四模型实验结果汇总_20261102.md)，下一步以[首轮分析与计划](四模型首轮实验分析与下一步计划_20261102.md)为准。具体实现与验证见[开发记录](PULSE-SCF开发记录.md)。
+
+同日后续开发：独立 PULSE_FACT 已按原 PULSE 的完整主模型风格实现，十二数据集脚本和独立一键脚本已完成；旧三个模型保持原样。当前只有 CPU 功能检查，正式实验待运行，详见 [PULSE-FACT 开发记录](PULSE-FACT开发计划与记录.md)。
 
 开发遵守工作区根目录的[通用开发约束](../../AGENTS.md)。代码开发位置为 `PULSE-phy/`；`SOFTS-main/` 与 `FACT-main/` 保持原样，所需模块复制进主开发工程。
 
@@ -31,11 +33,11 @@
 | 基础组合或扩展 | 对应模型 | 当前状态 |
 | --- | --- | --- |
 | PULSE＋SOFTS | `PULSE_SOFTS` | 已实现，保留 STAR，不含 FACT |
-| PULSE＋FACT | 尚无独立模型 | 未实现，后续需补充该基础对照；本次不改 Python 模型代码 |
+| PULSE＋FACT | `PULSE_FACT` | 已实现；保留原 MLP，在隐藏层加入 FACT，正式训练待运行 |
 | PULSE＋SOFTS＋FACT 简单连接 | `PULSE_SCF_SIMPLE` | 已实现，同时含 STAR 和 FACT |
 | PULSE＋SOFTS＋FACT 条件连接 | `PULSE_SCF` | 已实现，增加共享核心偏离和历史状态门控 |
 
-`PULSE_SCF_SIMPLE` 不等于 PULSE＋FACT；它仍先使用 STAR，再加入直接作用于变量表示的 FACT 增量。此前实现的三个新模型没有覆盖独立 PULSE＋FACT，不能将这一基础对照视为已完成。
+`PULSE_SCF_SIMPLE` 不等于 PULSE＋FACT；它仍先使用 STAR，再加入直接作用于变量表示的 FACT 增量。此前三个新模型留下的独立 FACT 对照缺口现由 PULSE_FACT 补齐实现，实验结果仍待运行。
 
 ## 2. 本地源码与模块职责
 
@@ -112,6 +114,10 @@ $$
 | `PULSE-phy/models/PULSE_SCF.py` | 已新增 | PULSE 框架与新骨干的组合模型 |
 | `PULSE-phy/models/PULSE_SOFTS.py` | 已新增 | 不含 FACT 的骨干替换对照 |
 | `PULSE-phy/models/PULSE_SCF_SIMPLE.py` | 已新增 | 对变量表示直接接入 FACT 增量的对照 |
+| `PULSE-phy/models/PULSE_FACT.py` | 已新增 | 独立完整主模型，保留原 MLP 并插入 FACT |
+| `PULSE-phy/layers/pulse_fact/` | 已新增 | 独立 FACT 来源副本、许可证、哈希与适配 |
+| `PULSE-phy/scripts/PULSE_FACT/` | 已新增 | 十二个标准数据集，48 条来源配置命令 |
+| `PULSE-phy/scripts/run_PULSE_FACT.sh` | 已新增 | PULSE_FACT 的独立顺序启动清单 |
 | `PULSE-phy/layers/pulse_scf/` | 已新增 | 来源模块副本、独立配置、SCF 扩展、条件连接与 backbone |
 | `PULSE-phy/layers/pulse_scf/deterministic.py` | 已新增 | 等价的核心选择与循环补齐，避免索引反向的 scatter／index-add 路径 |
 | `PULSE-phy/scripts/PULSE/` | 已新增 | 原模型参照，十二个数据集，保留根层旧脚本 |
@@ -120,7 +126,7 @@ $$
 | `PULSE-phy/scripts/PULSE_SCF_SIMPLE/` | 已补齐 | STAR＋FACT 简单连接的十二个数据集脚本 |
 | `PULSE-phy/tests/test_pulse_scf.py` | 已新增 | 接口、梯度、训练配对、保存恢复及脚本检查 |
 | `PULSE-phy/tests/test_scf_deterministic.py` | 已新增 | 严格确定性下的等价性与训练步检查，CUDA 可用时执行 GPU 项 |
-| `PULSE-phy/exp/exp_main.py` | 已增加 4 行 | 1 行导入、3 个注册项；既有训练与评价逻辑保持原样 |
+| `PULSE-phy/exp/exp_main.py` | 仅增加导入和注册 | 原三个模型共 4 行；本轮 PULSE_FACT 再加 2 行，训练与评价逻辑保持原样 |
 | `PULSE-phy/run.py` | 未修改 | 新 CLI 参数接入如需实施，仍须额外确认 |
 | `PULSE-phy/requirements-scf.txt` | 已新增 | 引用原 requirements，补充原入口启动需要的 `einops` |
 | 原模型、原数据处理、通用模块和旧脚本 | 保持原样 | 保留原方法和已有复现基础 |
@@ -139,9 +145,9 @@ $$
 
 ### 5.1 全部模型与数据集脚本
 
-四个模型目录 `PULSE/`、`PULSE_SOFTS/`、`PULSE_SCF_SIMPLE/`、`PULSE_SCF/` 各提供十二个数据集脚本，共 48 个文件。完整文件链接、数据文件位置和预测长度见[模型数据集脚本与输出索引](模型数据集脚本与输出索引.md)。
+五个模型目录 `PULSE/`、`PULSE_SOFTS/`、`PULSE_SCF_SIMPLE/`、`PULSE_SCF/`、`PULSE_FACT/` 各提供十二个数据集脚本，共 60 个文件。完整文件链接、数据文件位置和预测长度见[模型数据集脚本与输出索引](模型数据集脚本与输出索引.md)。
 
-数据集为 ETTh1、ETTh2、ETTm1、ETTm2、electricity、traffic、Weather、Solar、PEMS03、PEMS04、PEMS07、PEMS08；不包括大桥数据。默认保留原脚本的四个预测长度：普通长预测为 96、192、336、720，PEMS 为 12、24、48、96。独立 PULSE＋FACT 尚未实现，不创建其占位运行脚本。
+数据集为 ETTh1、ETTh2、ETTm1、ETTm2、electricity、traffic、Weather、Solar、PEMS03、PEMS04、PEMS07、PEMS08；不包括大桥数据。默认保留原脚本的四个预测长度：普通长预测为 96、192、336、720，PEMS 为 12、24、48、96。PULSE_FACT 已有实际实现和独立脚本，尚未正式训练。
 
 原脚本顶部变量与续行 `python -u run.py` 格式保持一致，逐时距保留 Router、周期、批量、学习率、种子和训练设置。每个脚本固定模型名，直接展开四个命令块，无 shell 函数、模型切换或时距选择器。只改变模型名、独立模型标识及 checkpoint 根目录；不改变 Python 模型或原训练入口。需要单时距时直接保留对应命令块。
 
@@ -216,7 +222,7 @@ checkpoints/<ModelName>/<setting>/checkpoint.pth
 | --- | --- |
 | 原 PULSE | 主要参照，保留默认 MLP 与对应训练协议 |
 | PULSE＋SOFTS | 区分骨干替换的影响 |
-| PULSE＋FACT（待实现） | 补齐用户明确的单独 FACT 基础组合；本次脚本不能代替该模型开发 |
+| PULSE＋FACT（已实现、待训练） | 已补齐原 MLP 加 FACT 的单独组合，后续验证增量与稳定性 |
 | PULSE＋SOFTS＋FACT 简单连接 | 在变量表示上直接接入 FACT 增量，作为连接方式对照 |
 | 完整 PULSE_SCF | 共享核心偏离构造＋历史参考状态条件修正 |
 
@@ -228,20 +234,20 @@ checkpoints/<ModelName>/<setting>/checkpoint.pth
 
 使用验证集进行选择，独立测试集用于最终评价；新增条件只能使用推理时可得信息。保存、恢复和选模规则在基线与新方法间保持一致。
 
-## 8. 实验结果预留
+## 8. 实验结果与后续预留
 
 ### 8.1 主结果
 
 | 数据集 | L→H | 模型 | 种子／重复数 | MSE | MAE | 相对原 PULSE 差异 | 日志／检查点 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 待确定 | 待确定 | 原 PULSE | 待确定 | 待运行 | 待运行 | 参照 | 待填写 |
-| 待确定 | 待确定 | PULSE＋SOFTS | 待确定 | 待运行 | 待运行 | 待计算 | 待填写 |
-| 待确定 | 待确定 | PULSE＋FACT | 待确定 | 待实现 | 待实现 | 待实现后比较 | 尚无模型与脚本 |
-| 待确定 | 待确定 | 简单 FACT 连接 | 待确定 | 待运行 | 待运行 | 待计算 | 待填写 |
-| 待确定 | 待确定 | 完整 PULSE_SCF | 待确定 | 待运行 | 待运行 | 待计算 | 待填写 |
-| ETTh1 | 96→96 | PULSE_SCF，服务器单次记录 | 1 次，种子待完整日志核对 | 约 0.3709 | 约 0.3985 | 待原 PULSE 同协议比较 | 用户截图，完整日志待归档；第 20 轮早停后测试 |
+| 十二个标准数据集 | 各四时距 | 原 PULSE | 2024／1 次 | 见完整表 | 见完整表 | 参照 | `logs/Pulse/`，48 组已完成 |
+| 十二个标准数据集 | 各四时距 | PULSE＋SOFTS | 2024／1 次 | 见完整表 | 见完整表 | MSE 28/48 组优于基线 | `logs/PULSE_SOFTS/`，48 组已完成 |
+| 十二个标准数据集 | 各四时距 | PULSE＋FACT | 2024（脚本默认） | 待运行 | 待运行 | 待比较 | 独立模型与十二份脚本已实现 |
+| 十二个标准数据集 | 各四时距 | 简单 FACT 连接 | 2024／1 次 | 见完整表 | 见完整表 | MSE 30/48 组优于基线 | `logs/PULSE_SCF_SIMPLE/`，48 组已完成 |
+| 十二个标准数据集 | 各四时距 | 完整 PULSE_SCF | 2024／1 次 | 见完整表 | 见完整表 | MSE 26/48 组优于基线 | `logs/PULSE_SCF/`，48 组已完成 |
+| ETTh1 | 96→96 | PULSE_SCF，日志已核验 | 2024／1 次 | 0.370934 | 0.398464 | PULSE 为 0.361477／0.389931，本配置退化 | 完整日志已纳入溯源；第 20 轮早停后测试 |
 
-对误差指标，相对差异定义为 `(新方法指标−参照指标)/参照指标`，正值表示误差增加。重复实验完成后记录均值与波动，不将单次试跑当成稳定结论。
+完整逐时距结果、各数据集均值及排名见[四模型汇总](../logs/四模型实验结果汇总_20261102.md)。本轮统一使用“相对改善”口径 `(参照指标−新方法指标)/参照指标`，正值表示误差降低；跨配置先算配对百分比再等权平均。重复实验完成后记录均值与波动，不将单次试跑当成稳定结论。
 
 ### 8.2 连接机制与条件分析
 

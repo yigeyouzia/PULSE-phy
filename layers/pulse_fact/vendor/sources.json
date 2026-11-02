@@ -1,0 +1,32 @@
+{
+  "created": "2026-11-02",
+  "sources": [
+    {
+      "source": "FACT-main/models/FACT.py",
+      "source_kind": "ZIP extraction; commit unknown",
+      "source_sha256": "43e433220a204461b6bb579ef6a4d802be3ac0b8c4eea15c0880cdc393dba831",
+      "selection": [
+        "Inception2d",
+        "Conv_block2d"
+      ],
+      "copied_file": "fact_conv.py",
+      "copied_sha256": "12686dabd96bde224f622331a730b45a7afacdcc6d7cbb69cd952f59e1b22ca6",
+      "changes": "Added provenance header and required imports. Selected class text is unchanged. Shape conversion and deterministic cyclic padding are isolated in ../fact_block.py."
+    }
+  ],
+  "licenses": [
+    {
+      "source": "FACT-main/LICENSE",
+      "copied_file": "FACT_LICENSE",
+      "sha256": "8a6caa178ea3f33ebff5d7bb5558628cf5b423305dc30d3630f86564c7db94a2"
+    }
+  ],
+  "main_model_source": {
+    "source": "PULSE-phy/models/PULSE.py",
+    "head_commit": "a1d555d50ca4bae27d1053b5fe31cfe925af2266",
+    "source_sha256": "764964d5c0adb4d62c743800f3c0e85237ff7b9ef89192370d81beadb2f612b8",
+    "changes": "Copied standalone ReVIN and Model; preserve original modules and SAM/norm/Router/denorm. Add configuration validation/metadata and a FACT block after GELU before the output projection.",
+    "working_tree_matches_head": true,
+    "working_tree_diff": ""
+  }
+}
