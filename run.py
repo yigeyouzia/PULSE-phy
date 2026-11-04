@@ -142,8 +142,9 @@ parser.add_argument('--test_flop', action='store_true', default=False, help='See
 args = parser.parse_args()
 
 if args.data == 'Gjemnessund':
-    if args.model != 'PULSE' or args.features != 'M' or args.enc_in != 10:
-        parser.error('Initial Gje adapter requires --model PULSE --features M --enc_in 10')
+    from utils.gje_model_support import GJE_SUPPORTED_MODELS
+    if args.model not in GJE_SUPPORTED_MODELS or args.features != 'M' or args.enc_in != 10:
+        parser.error('Gje requires --model PULSE/PULSE_SCF/PULSE_FACT --features M --enc_in 10')
     if args.time_dim != 6 or args.label_len != 0:
         parser.error('Gje requires --time_dim 6 --label_len 0')
     if args.use_amp or args.do_predict or args.use_multi_gpu:

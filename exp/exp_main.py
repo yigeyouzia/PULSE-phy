@@ -494,6 +494,9 @@ class Exp_Main(Exp_Basic):
                     loss='Original non-AMP SAM target mixing + configured rec/FFT loss',
                     scheduler='Original OneCycleLR construction + original lradj behavior',
                     test_policy='No test-set evaluation/selection during training')
+        if self.args.model in ('PULSE_SCF', 'PULSE_FACT'):
+            from utils.gje_model_support import gje_extended_model_provenance
+            info.update(gje_extended_model_provenance(self.args.model, self.model))
         (Path(path) / 'gje_run.json').write_text(json.dumps(info, indent=2), encoding='utf-8')
 
     def _test_gjemnessund(self, setting, data, loader, load):
