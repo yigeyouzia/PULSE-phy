@@ -118,3 +118,11 @@ PULSE-phy/
 源码还有一个边界：内部 in-place 归一化不支持对原始输入张量求梯度。本轮使用普通数据输入（requires_grad=False），原模型参数梯度正常；没有为输入梯度用途修复源码。
 
 未完成：服务器 CUDA、真实十二数据集和大桥的完整训练；本机缺少 PEMS07 原始文件及大桥 H5，不用合成结果代替。当前复制原模型支持的 core=0 问题和特殊小变量网格限制仍明确拒绝。正式实验结果待填写，提交／推送仅包含本轮增量。
+
+## 8. 全部 FACT 脚本顺序启动
+
+2026-11-05，按用户要求新增 [scripts/run_FACT.sh](../scripts/run_FACT.sh)，直接逐行 bash 调用全部十三份数据集脚本，无函数、无循环、无并发；set -e 保证任一脚本失败即停。
+
+执行顺序：Gjemnessund → ETTh1 → ETTh2 → ETTm1 → ETTm2 → electricity → traffic → Weather → Solar → PEMS03 → PEMS04 → PEMS07 → PEMS08。每份数据集脚本继续顺序执行自己的四个时距，共 52 次训练；运行前需准备相应数据。
+
+从工程根目录执行 `bash scripts/run_FACT.sh`。本轮仅检查 shell 语法、清单覆盖和路径，不启动训练。
