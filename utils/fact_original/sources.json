@@ -1,0 +1,28 @@
+{
+  "source_directory": "../FACT-main",
+  "source_kind": "ZIP extraction without .git; commit unknown",
+  "upstream": "https://github.com/wanghq21/FACT",
+  "copied_on": "2026-11-05",
+  "files": [
+    {
+      "source_file": "models/FACT.py",
+      "copied_file": "models/FACT.py",
+      "source_sha256": "43e433220a204461b6bb579ef6a4d802be3ac0b8c4eea15c0880cdc393dba831",
+      "copied_sha256": "43e433220a204461b6bb579ef6a4d802be3ac0b8c4eea15c0880cdc393dba831",
+      "modifications": "none; byte-identical"
+    },
+    {
+      "source_file": "LICENSE",
+      "copied_file": "utils/fact_original/FACT_LICENSE",
+      "source_sha256": "8a6caa178ea3f33ebff5d7bb5558628cf5b423305dc30d3630f86564c7db94a2",
+      "copied_sha256": "8a6caa178ea3f33ebff5d7bb5558628cf5b423305dc30d3630f86564c7db94a2",
+      "modifications": "none; byte-identical"
+    }
+  ],
+  "scope": "Complete unmodified FACT model; common data/budget baseline, not paper protocol reproduction",
+  "known_limitations": [
+    "core=0 forecast branch typo retained; rejected by integration",
+    "single-prefix padding retained; invalid small grids rejected",
+    "only forecasting is integrated"
+  ]
+}

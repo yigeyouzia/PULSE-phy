@@ -139,24 +139,37 @@ parser.add_argument('--use_multi_gpu', action='store_true', help='use multiple g
 parser.add_argument('--devices', type=str, default='0,1', help='device ids of multile gpus')
 parser.add_argument('--test_flop', action='store_true', default=False, help='See utils/tools for usage')
 
+from utils.fact_original.support import add_fact_arguments
+add_fact_arguments(parser)
+
 args = parser.parse_args()
 
+if args.model == 'FACT':
+    from utils.fact_original.support import validate_fact_arguments, fact_setting
+    try:
+        validate_fact_arguments(args)
+    except ValueError as error:
+        parser.error(str(error))
+
 if args.data == 'Gjemnessund':
-    from utils.gje_model_support import GJE_SUPPORTED_MODELS
-    if args.model not in GJE_SUPPORTED_MODELS or args.features != 'M' or args.enc_in != 10:
-        parser.error('Gje requires --model PULSE/PULSE_SCF/PULSE_FACT --features M --enc_in 10')
-    if args.time_dim != 6 or args.label_len != 0:
-        parser.error('Gje requires --time_dim 6 --label_len 0')
-    if args.use_amp or args.do_predict or args.use_multi_gpu:
-        parser.error('Initial Gje path supports non-AMP single-device train/test only')
-    if args.seq_len < 2 or args.pred_len < 1 or args.patch_size < 1 or args.inv_len < 1:
-        parser.error('Invalid Gje sequence/model lengths')
-    if args.seq_len % args.patch_size or args.pred_len % args.patch_size:
-        parser.error('PULSE patch_size must divide both seq_len and pred_len')
-    if args.dsa < 1 or args.dsb < 1 or min(args.enc_in // args.dsa, args.enc_in // args.dsb) < 1:
-        parser.error('dsa/dsb would create an empty TimeEncoder feature dimension')
-    if min(args.gje_record_limit, args.gje_max_batches) < 0 or min(args.gje_window_stride, args.gje_cycle_len, args.gje_log_interval) < 1:
-        parser.error('Invalid Gje adapter/debug arguments')
+    if args.model == 'FACT':
+        pass  # FACT-specific data/interface checks were performed above.
+    else:
+        from utils.gje_model_support import GJE_SUPPORTED_MODELS
+        if args.model not in GJE_SUPPORTED_MODELS or args.features != 'M' or args.enc_in != 10:
+            parser.error('Gje requires --model PULSE/PULSE_SCF/PULSE_FACT --features M --enc_in 10')
+        if args.time_dim != 6 or args.label_len != 0:
+            parser.error('Gje requires --time_dim 6 --label_len 0')
+        if args.use_amp or args.do_predict or args.use_multi_gpu:
+            parser.error('Initial Gje path supports non-AMP single-device train/test only')
+        if args.seq_len < 2 or args.pred_len < 1 or args.patch_size < 1 or args.inv_len < 1:
+            parser.error('Invalid Gje sequence/model lengths')
+        if args.seq_len % args.patch_size or args.pred_len % args.patch_size:
+            parser.error('PULSE patch_size must divide both seq_len and pred_len')
+        if args.dsa < 1 or args.dsb < 1 or min(args.enc_in // args.dsa, args.enc_in // args.dsb) < 1:
+            parser.error('dsa/dsb would create an empty TimeEncoder feature dimension')
+        if min(args.gje_record_limit, args.gje_max_batches) < 0 or min(args.gje_window_stride, args.gje_cycle_len, args.gje_log_interval) < 1:
+            parser.error('Invalid Gje adapter/debug arguments')
 
 
 def gje_setting(setting):
@@ -188,6 +201,9 @@ if __name__ == '__main__':
     print('Args in experiment:')
     print(args)
     Exp = Exp_Main
+    if args.model == 'FACT':
+        from exp.exp_fact import Exp_FACT
+        Exp = Exp_FACT
 
     if args.is_training:
         for ii in range(args.itr):
@@ -210,6 +226,8 @@ if __name__ == '__main__':
             )
 
             setting = gje_setting(setting)
+            if args.model == 'FACT':
+                setting = fact_setting(setting, args)
             exp = Exp(args)  # set experiments
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
             exp.train(setting)
@@ -241,6 +259,8 @@ if __name__ == '__main__':
         )
 
         setting = gje_setting(setting)
+        if args.model == 'FACT':
+            setting = fact_setting(setting, args)
         exp = Exp(args)  # set experiments
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
         exp.test(setting, test=1)
