@@ -67,6 +67,27 @@
   "script_scope": {
     "ETTh1": [
       96,
+      192,
+      336,
+      720
+    ],
+    "ETTh2": [
+      96,
+      192,
+      336,
+      720
+    ],
+    "PEMS04": [
+      12,
+      24,
+      48,
+      96
+    ]
+  },
+  "entrypoint": "Original run.py unchanged; exp_main import/registry only",
+  "initial_script_scope": {
+    "ETTh1": [
+      96,
       720
     ],
     "ETTh2": [
@@ -76,5 +97,5 @@
       96
     ]
   },
-  "entrypoint": "Original run.py unchanged; exp_main import/registry only"
+  "script_scope_updated": "2026-11-11"
 }

@@ -1,6 +1,6 @@
 # PULSE_FACT_MP 开发计划：预测均值保持的交互修正
 
-创建：2026-11-10；开发更新：2026-11-11。状态：模型、最小注册、三份脚本已实现；两个 CPU 环境检查通过，正式实验与 CUDA 检查待运行。暂定机制名 **MPIC（Mean-Preserving Interaction Correction）**，中文“预测均值保持的交互修正”。名称仅作工作标识，未验证文献唯一性或创新优先权。
+创建：2026-11-10；开发更新：2026-11-11。状态：模型、最小注册已实现，三份脚本均已补齐对应原数据集的四个时距，共十二组配置；两个 CPU 环境检查通过，正式实验与 CUDA 检查待运行。暂定机制名 **MPIC（Mean-Preserving Interaction Correction）**，中文“预测均值保持的交互修正”。名称仅作工作标识，未验证文献唯一性或创新优先权。
 
 ## 1. 依据、目标与开发约束
 
@@ -67,9 +67,9 @@ $$
 | 新增 | `models/PULSE_FACT_MP.py` | 完整 class Model、ReVIN、init、norm、Router、denorm、forward；显式展开两预测与时间均值投影 |
 | 最小修改 | `exp/exp_main.py` | 仅新增导入和注册，不改训练、验证、损失、测试分支 |
 | 新增 | `tests/test_pulse_fact_mp.py` | 均值／波动性质、接口、SAM、梯度、保存恢复和旧模型保护 |
-| 新增 | `scripts/PULSE_FACT_MP/ETTh1.sh` | 首轮直接顺序执行 H=96、720 两段命令 |
-| 新增 | `scripts/PULSE_FACT_MP/ETTh2.sh` | 首轮只执行 H=720，保留已有融合的正例 |
-| 新增 | `scripts/PULSE_FACT_MP/PEMS04.sh` | 首轮只执行 H=96，检查跨变量交互正例是否受损 |
+| 新增并补齐 | `scripts/PULSE_FACT_MP/ETTh1.sh` | 直接顺序执行 H=96、192、336、720 |
+| 新增并补齐 | `scripts/PULSE_FACT_MP/ETTh2.sh` | 直接顺序执行 H=96、192、336、720 |
+| 新增并补齐 | `scripts/PULSE_FACT_MP/PEMS04.sh` | 直接顺序执行 H=12、24、48、96 |
 | 维护 | 本计划及独立来源记录 | 复制来源、源文件 SHA256、配置、检查和真实结果 |
 
 来源与检查记录：[来源 manifest](data/pulse_fact_mp_sources.json)、[开发检查 JSON](data/pulse_fact_mp_development_checks.json)。
@@ -94,7 +94,7 @@ $$
 2. 在独立主文件复制原清楚的数据流；只增加共享参数的第二条预测和最终均值投影。旧文件保持原样。
 3. 先做最小 CPU 形状／梯度／恢复检查；再做原实验类兼容和真实脚本配置的轻量前向。
 4. 经最小注册接入，检查每份 shell 语法、参数支持、失败状态、日志路径和 checkpoint 路径；不改 run.py。
-5. 首轮只运行下列四个配置；记录逐变量、预测距离、窗口水平／波动误差以及完整原始指标，不只报总 MSE。
+5. 按当前三数据集、各四个时距的范围执行；记录逐变量、预测距离、窗口水平／波动误差以及完整原始指标，不只报总 MSE。
 6. 用一致协议重复种子；根据真实验证结果决策，预定测试结果完整报告，不挑有利种子、变量或时距。
 
 必须通过的检查：
@@ -105,13 +105,13 @@ $$
 - SAM 的 lambda、index、统计量和两个分支严格一致。
 - 保存／严格恢复配置与预测一致；原有模型、来源层、入口、旧脚本和输出哈希不变。
 
-## 7. 首轮脚本与预计输出
+## 7. 当前完整脚本与预计输出
 
-| 模型—脚本 | 对应参考 | 首轮时距 | 预计日志 |
+| 模型—脚本 | 对应参考 | 输入→预测时距 | 预计日志 |
 | --- | --- | --- | --- |
-| `PULSE_FACT_MP/ETTh1.sh` | `PULSE_FACT/ETTh1.sh` 原对应命令 | 96→96、96→720 | `logs/PULSE_FACT_MP/ETTh1/PULSE_FACT_MP_96_96.log`、`PULSE_FACT_MP_96_720.log` |
-| `PULSE_FACT_MP/ETTh2.sh` | `PULSE_FACT/ETTh2.sh` H=720 命令 | 96→720 | `logs/PULSE_FACT_MP/ETTh2/PULSE_FACT_MP_96_720.log` |
-| `PULSE_FACT_MP/PEMS04.sh` | `PULSE_FACT/PEMS04.sh` H=96 命令 | 96→96 | `logs/PULSE_FACT_MP/PEMS04/PULSE_FACT_MP_96_96.log` |
+| `PULSE_FACT_MP/ETTh1.sh` | `PULSE_FACT/ETTh1.sh` 全部四段命令 | 96→96／192／336／720 | `logs/PULSE_FACT_MP/ETTh1/PULSE_FACT_MP_96_<H>.log` |
+| `PULSE_FACT_MP/ETTh2.sh` | `PULSE_FACT/ETTh2.sh` 全部四段命令 | 96→96／192／336／720 | `logs/PULSE_FACT_MP/ETTh2/PULSE_FACT_MP_96_<H>.log` |
+| `PULSE_FACT_MP/PEMS04.sh` | `PULSE_FACT/PEMS04.sh` 全部四段命令 | 96→12／24／48／96 | `logs/PULSE_FACT_MP/PEMS04/PULSE_FACT_MP_96_<H>.log` |
 
 数据路径、batch、Router 参数、inv_len、patch、学习率、30 轮预算、patience=5、FFT／SAM 均复制对应原命令，首轮 seed=2024。新模型不能借用源模型日志路径。脚本沿用顶部变量＋直接续行 `python -u run.py`，无 shell 函数、菜单或选择器；`set -e`，`> log 2>&1`，先打印日志绝对路径。本轮未要求启动清单，计划不额外引入一键入口。
 
@@ -124,9 +124,19 @@ PULSE-phy/
 ├── logs/PULSE_FACT_MP/
 │   ├── ETTh1/
 │   │   ├── PULSE_FACT_MP_96_96.log
+│   │   ├── PULSE_FACT_MP_96_192.log
+│   │   ├── PULSE_FACT_MP_96_336.log
 │   │   └── PULSE_FACT_MP_96_720.log
-│   ├── ETTh2/PULSE_FACT_MP_96_720.log
-│   └── PEMS04/PULSE_FACT_MP_96_96.log
+│   ├── ETTh2/
+│   │   ├── PULSE_FACT_MP_96_96.log
+│   │   ├── PULSE_FACT_MP_96_192.log
+│   │   ├── PULSE_FACT_MP_96_336.log
+│   │   └── PULSE_FACT_MP_96_720.log
+│   └── PEMS04/
+│       ├── PULSE_FACT_MP_96_12.log
+│       ├── PULSE_FACT_MP_96_24.log
+│       ├── PULSE_FACT_MP_96_48.log
+│       └── PULSE_FACT_MP_96_96.log
 └── checkpoints/PULSE_FACT_MP/<setting>/checkpoint.pth
 ```
 
@@ -134,7 +144,7 @@ PULSE-phy/
 
 ## 8. 实验判断与后续分支
 
-首轮四次训练只作筛选。主要假设：720 步窗口水平误差下降，并转化为整体 MSE 改善；96 步波动误差不进一步明显恶化；ETTh2、PEMS04 原有交互收益不被普遍破坏。上述都是待检验目标，不填写推测数值。
+初版四个诊断配置仍是机制分析重点；按用户补充要求，当前脚本默认覆盖三份数据集的全部十二组配置，不能只报告其中有利的结果。主要假设：720 步窗口水平误差下降，并转化为整体 MSE 改善；96 步波动误差不进一步明显恶化；ETTh2、PEMS04 原有交互收益不被普遍破坏。上述都是待检验目标，不填写推测数值。
 
 筛选后，ETTh1 两个时距比较 PULSE／PULSE_FACT／MP，补 seed=2025、2026：三模型×两配置×两种子，共十二次新增训练，已有对应 seed=2024 可在协议不变时合并。若先完成了原两模型的八次重复，可复用其中结果，仅再补 MP 四次。三种子主要用于初步波动评估，不预设显著性。
 
@@ -158,7 +168,7 @@ PULSE-phy/
 
 已完成：真实 checkpoint 的诊断、独立主模型、exp_main 的两行导入／注册、检查代码、三份脚本和来源记录。未完成：正式 benchmark 训练、多种子验证和本机不可执行的 CUDA 检查。代码可通过原入口接入，不把开发检查当作正式精度结果。
 
-## 11. 2026-11-11 实现与验收记录
+## 11. 2026-11-11 初版实现与验收记录（e116695）
 
 主模型：[models/PULSE_FACT_MP.py](../models/PULSE_FACT_MP.py)。保留完整 ReVIN、norm、Router、denorm；原算法方法的 AST 与 PULSE_FACT 一致。两个输出分支使用同一个预测头和同一组 Router 参数，FACT 只计算一次、BN 每次训练 forward 只更新一次。
 
@@ -166,7 +176,7 @@ PULSE-phy/
 
 MP 的投影输入是两个完成 Router 与 ReVIN 恢复后的预测，不是隐藏特征；没有 detach，没有第二个预测头或第二组 Router 参数。与对应 PULSE_FACT 相比，可训练参数数目相同。
 
-| 首轮配置 | PULSE_FACT 参数 | PULSE_FACT_MP 参数 |
+| 初版四配置的参数示例 | PULSE_FACT 参数 | PULSE_FACT_MP 参数 |
 | --- | ---: | ---: |
 | ETTh1 96→96 | 473542 | 473542 |
 | ETTh1 96→720 | 3340968 | 3340968 |
@@ -202,6 +212,16 @@ bash scripts/PULSE_FACT_MP/ETTh2.sh
 bash scripts/PULSE_FACT_MP/PEMS04.sh
 ```
 
-上述依次是两次、一次、一次训练；没有自动启动任何正式训练。服务器测试会自动启用本机跳过的 CUDA 反向与原入口冒烟检查，建议先执行专项检查，再执行这三份脚本。当前需求未增加一键启动清单，也未扩展到其他时距或大桥。
+初版脚本依次是两次、一次、一次训练；本节检查结果对应 e116695 的历史状态。补齐后，上述三条命令分别执行四次训练，合计十二次。没有自动启动任何正式训练。服务器测试会自动启用本机跳过的 CUDA 反向与原入口冒烟检查，建议先执行专项检查，再执行这三份脚本。没有额外新增一键启动清单或大桥配置。
 
 Git 提交只纳入 MP 代码、脚本、检查和相关诊断笔记／产物。工作区同时存在的大桥开发和其他用户修改保留；exp_main 本轮增量仅新增 MP 导入与注册，run.py 未改动。推送状态以实际 Git 结果为准，正式指标保留待运行。
+
+## 12. 三数据集四时距脚本补齐
+
+2026-11-11 按用户补充要求，三个现有脚本分别补齐原仓库对应的四段命令，合计十二组配置；不新增十二份单时距文件，也不增加函数、菜单或训练入口。每个时距的 inv_len、dsa、dsb、ksize、d_model、patch_size 等均复制对应 PULSE_FACT 原脚本的实际值，不套用某一个时距的配置。
+
+本次仅维护三份 MP 脚本、脚本范围检查、来源范围与本记录，主模型和训练代码保持原样。既有初版开发审计保留；新的脚本检查单独记录在 [四时距脚本检查 JSON](data/pulse_fact_mp_script_checks.json)。
+
+已在 Python 3.13／torch 2.9 和 Python 3.8／torch 2.0 两个 CPU 环境执行脚本专项检查：各两项通过、一项 CUDA 原入口检查跳过。检查覆盖三份 shell 语法、十二组完整参考参数、十二组实际模型前向形状、日志路径、覆盖规则、checkpoint 标识与失败即停；没有启动正式数据集训练。
+
+运行方式仍是上一节的三条 bash 命令。日志继续使用固定 `logs/PULSE_FACT_MP/<dataset>/PULSE_FACT_MP_96_<H>.log`，checkpoint 继续使用 `checkpoints/PULSE_FACT_MP/<setting>/checkpoint.pth`；没有迁移或改写历史实验产物，正式结果待运行。

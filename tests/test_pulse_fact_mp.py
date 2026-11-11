@@ -25,7 +25,8 @@ import test_pulse_fact as source_tests
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCOPES = {'ETTh1': (96, 720), 'ETTh2': (720,), 'PEMS04': (96,)}
+SCOPES = {'ETTh1': (96, 192, 336, 720), 'ETTh2': (96, 192, 336, 720),
+          'PEMS04': (12, 24, 48, 96)}
 
 
 def config(**overrides):
@@ -330,11 +331,11 @@ class MPICScriptsTests(unittest.TestCase):
             first,one=helper.fact_capture(script,directory)
             second,two=helper.fact_capture(script,directory,message='second')
             self.assertEqual((first.returncode,second.returncode),(0,0))
-            self.assertEqual(len(two),4)
+            self.assertEqual(len(two),2*len(SCOPES['ETTh1']))
             self.assertTrue({parser.parse_args(c[2:]).model_id for c in one}.isdisjoint(
-                            {parser.parse_args(c[2:]).model_id for c in two[2:]}))
+                            {parser.parse_args(c[2:]).model_id for c in two[len(one):]}))
             logs=list((Path(directory)/'logs').rglob('*.log'))
-            self.assertEqual(len(logs),2)
+            self.assertEqual(len(logs),len(SCOPES['ETTh1']))
             self.assertTrue(all(log.read_text()=='second\nstderr\n' for log in logs))
 
     @unittest.skipUnless(torch.cuda.is_available(),
