@@ -1,0 +1,149 @@
+{
+  "date": "2026-11-10",
+  "code_start": "a9f8e287c5dffc4b5d5440d711225ab58e713b1c",
+  "python": "3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 11:23:37) [Clang 14.0.6 ]",
+  "torch": "2.9.0",
+  "numpy": "2.3.4",
+  "device": "cpu",
+  "suites": [
+    {
+      "suite": "physics",
+      "tests": 9,
+      "seconds": 8.807,
+      "skipped": 1,
+      "status": "passed",
+      "tests_detail": [
+        "test_exact_zoh_recurrence_stable_poles_and_causal_convolution (test_gje_physics.GjePhysicsTests.test_exact_zoh_recurrence_stable_poles_and_causal_convolution) ... ok",
+        "test_four_horizons_fft_gradient_and_checkpoint_cpu (test_gje_physics.GjePhysicsTests.test_four_horizons_fft_gradient_and_checkpoint_cpu) ... ok",
+        "test_four_horizons_fft_gradient_and_checkpoint_cuda (test_gje_physics.GjePhysicsTests.test_four_horizons_fft_gradient_and_checkpoint_cuda) ... skipped 'CUDA is unavailable on this host'",
+        "test_harmonic_extrapolation_uses_seconds_and_correct_phase (test_gje_physics.GjePhysicsTests.test_harmonic_extrapolation_uses_seconds_and_correct_phase) ... ok",
+        "test_original_entry_training_automatic_and_independent_test_in_temporary_project (test_gje_physics.GjePhysicsTests.test_original_entry_training_automatic_and_independent_test_in_temporary_project) ... ok",
+        "test_sam_history_and_supervision_share_the_same_mixing (test_gje_physics.GjePhysicsTests.test_sam_history_and_supervision_share_the_same_mixing) ... ok",
+        "test_scripts_are_direct_commands_valid_flags_fixed_paths_and_fail_fast (test_gje_physics.GjePhysicsTests.test_scripts_are_direct_commands_valid_flags_fixed_paths_and_fail_fast) ... ok",
+        "test_standard_scaler_g_si_roundtrip_and_protocol_rejection (test_gje_physics.GjePhysicsTests.test_standard_scaler_g_si_roundtrip_and_protocol_rejection) ... ok",
+        "test_zero_gain_is_original_model_and_oscillator_has_no_acceleration_bypass (test_gje_physics.GjePhysicsTests.test_zero_gain_is_original_model_and_oscillator_has_no_acceleration_bypass) ... ok"
+      ]
+    },
+    {
+      "suite": "existing_gje_models",
+      "tests": 5,
+      "seconds": 11.155,
+      "skipped": 0,
+      "status": "passed",
+      "tests_detail": [
+        "test_entry_only_allows_verified_gje_models_and_preserves_guards (test_gje_extended_models.GjeExtendedModelTests.test_entry_only_allows_verified_gje_models_and_preserves_guards) ... ok",
+        "test_four_bridge_horizons_fft_gradient_and_checkpoint_roundtrip (test_gje_extended_models.GjeExtendedModelTests.test_four_bridge_horizons_fft_gradient_and_checkpoint_roundtrip) ... ok",
+        "test_metadata_records_actual_model_and_preserves_legacy_record (test_gje_extended_models.GjeExtendedModelTests.test_metadata_records_actual_model_and_preserves_legacy_record) ... ok",
+        "test_original_entry_training_restore_and_independent_test_on_synthetic_h5 (test_gje_extended_models.GjeExtendedModelTests.test_original_entry_training_restore_and_independent_test_on_synthetic_h5) ... ok",
+        "test_scripts_match_baseline_configuration_paths_and_stop_on_failure (test_gje_extended_models.GjeExtendedModelTests.test_scripts_match_baseline_configuration_paths_and_stop_on_failure) ... ok"
+      ]
+    },
+    {
+      "suite": "original_pulse_fact",
+      "tests": 15,
+      "seconds": 3.358,
+      "skipped": 1,
+      "status": "passed",
+      "tests_detail": [
+        "test_all_twelve_scripts_preserve_48_source_configs_and_output_layout (test_pulse_fact.PULSEFACTScriptTests.test_all_twelve_scripts_preserve_48_source_configs_and_output_layout) ... ok",
+        "test_fixed_logs_overwrite_but_checkpoint_experiment_ids_change (test_pulse_fact.PULSEFACTScriptTests.test_fixed_logs_overwrite_but_checkpoint_experiment_ids_change) ... ok",
+        "test_launcher_covers_twelve_datasets_and_stops_on_failure (test_pulse_fact.PULSEFACTScriptTests.test_launcher_covers_twelve_datasets_and_stops_on_failure) ... ok",
+        "test_checkpoint_roundtrip_and_effective_configuration_guard (test_pulse_fact.PULSEFACTTests.test_checkpoint_roundtrip_and_effective_configuration_guard) ... ok",
+        "test_existing_experiment_registration_and_validation (test_pulse_fact.PULSEFACTTests.test_existing_experiment_registration_and_validation) ... ok",
+        "test_identity_fact_preserves_original_pulse_initialization_and_behavior (test_pulse_fact.PULSEFACTTests.test_identity_fact_preserves_original_pulse_initialization_and_behavior) ... ok",
+        "test_invalid_configs_and_unsupported_training_paths_are_explicit (test_pulse_fact.PULSEFACTTests.test_invalid_configs_and_unsupported_training_paths_are_explicit) ... ok",
+        "test_model_fft_backward_all_parameters_and_eval_contract (test_pulse_fact.PULSEFACTTests.test_model_fft_backward_all_parameters_and_eval_contract) ... ok",
+        "test_sam_keeps_mixed_statistics_and_original_router_anchor (test_pulse_fact.PULSEFACTTests.test_sam_keeps_mixed_statistics_and_original_router_anchor) ... ok",
+        "test_settings_are_logged_independent_and_do_not_mutate_arguments (test_pulse_fact.PULSEFACTTests.test_settings_are_logged_independent_and_do_not_mutate_arguments) ... ok",
+        "test_small_square_and_large_variable_grids_have_finite_gradients (test_pulse_fact.PULSEFACTTests.test_small_square_and_large_variable_grids_have_finite_gradients) ... ok",
+        "test_source_block_forward_backward_and_running_stats_match (test_pulse_fact.PULSEFACTTests.test_source_block_forward_backward_and_running_stats_match) ... ok",
+        "test_source_copy_and_license_hashes_match_manifest (test_pulse_fact.PULSEFACTTests.test_source_copy_and_license_hashes_match_manifest) ... ok",
+        "test_strict_deterministic_optimizer_step_cpu (test_pulse_fact.PULSEFACTTests.test_strict_deterministic_optimizer_step_cpu) ... ok",
+        "test_strict_deterministic_optimizer_step_cuda (test_pulse_fact.PULSEFACTTests.test_strict_deterministic_optimizer_step_cuda) ... skipped 'CUDA unavailable; run on the training server'"
+      ]
+    },
+    {
+      "suite": "gje_dataset",
+      "tests": 8,
+      "seconds": 0.206,
+      "skipped": 0,
+      "status": "passed",
+      "tests_detail": [
+        "test_legacy_factory_dispatch (test_gjemnessund.GjeTests.test_legacy_factory_dispatch) ... ok",
+        "test_nonfinite_source_is_rejected (test_gjemnessund.GjeTests.test_nonfinite_source_is_rejected) ... train 17",
+        "test_original_pulse_forward_backward (test_gjemnessund.GjeTests.test_original_pulse_forward_backward) ... Gje: checking 3 records and fitting TRAIN rows only (first run).",
+        "test_overlap_prefix_is_owned_once_and_recorded (test_gjemnessund.GjeTests.test_overlap_prefix_is_owned_once_and_recorded) ... Gje: checking 3 records and fitting TRAIN rows only (first run).",
+        "test_time_grid_and_leap_year (test_gjemnessund.GjeTests.test_time_grid_and_leap_year) ... Gje: checking 3 records and fitting TRAIN rows only (first run).",
+        "test_training_only_scaler_and_frozen_reuse (test_gjemnessund.GjeTests.test_training_only_scaler_and_frozen_reuse) ... Gje: checking 3 records and fitting TRAIN rows only (first run).",
+        "test_validation_tail_batch_is_weighted_only_for_new_dataset (test_gjemnessund.GjeTests.test_validation_tail_batch_is_weighted_only_for_new_dataset) ... ok",
+        "test_window_boundaries_and_short_records (test_gjemnessund.GjeTests.test_window_boundaries_and_short_records) ... Gje: checking 3 records and fitting TRAIN rows only (first run)."
+      ]
+    }
+  ],
+  "total_tests": 37,
+  "total_skipped": 2,
+  "cuda_checked": false,
+  "python38_compatibility": {
+    "python": "3.8.20",
+    "torch": "2.0.0",
+    "scope": "Both new models: direct forward/FFT backward on CPU; passed"
+  },
+  "parameter_counts": [
+    {
+      "pred_len": 96,
+      "PULSE_FACT": 3340636,
+      "PULSE_FACT_MODAL": 3340642,
+      "PULSE_FACT_OSC": 3385526
+    },
+    {
+      "pred_len": 192,
+      "PULSE_FACT": 3528416,
+      "PULSE_FACT_MODAL": 3528422,
+      "PULSE_FACT_OSC": 3611706
+    },
+    {
+      "pred_len": 336,
+      "PULSE_FACT": 3982886,
+      "PULSE_FACT_MODAL": 3982892,
+      "PULSE_FACT_OSC": 4123776
+    },
+    {
+      "pred_len": 720,
+      "PULSE_FACT": 6208566,
+      "PULSE_FACT_MODAL": 6208572,
+      "PULSE_FACT_OSC": 6503056
+    }
+  ],
+  "protected_existing_source_changes": [
+    "exp/exp_main.py",
+    "tests/test_gje_extended_models.py",
+    "utils/gje_model_support.py"
+  ],
+  "old_model_files_sha256": {
+    "models/Autoformer.py": "69571eb9f31cec3620c3f72b841a3029d8bd6715083c0a54a6d44e6072390378",
+    "models/CycleNet.py": "936312a38f42c355ebab0a949311892b6fec8d0843905e53df46c1fb252b842d",
+    "models/DLinear.py": "94a1eec839e6c01ae9b09595c774559b7a69ef198873f2c4b2fb05dd3eed3890",
+    "models/FACT.py": "43e433220a204461b6bb579ef6a4d802be3ac0b8c4eea15c0880cdc393dba831",
+    "models/PULSE.py": "764964d5c0adb4d62c743800f3c0e85237ff7b9ef89192370d81beadb2f612b8",
+    "models/PULSE_FACT.py": "4f31942eb91380f1f473952bb8c50152f0d041f9ba9ab542bafa4acfd55e9857",
+    "models/PULSE_FACT_PC.py": "2e3f6d08b4a26d001dd60f81fe852b4d3f323fbb0ea23b49b9c61e762fcbbc66",
+    "models/PULSE_FACT_STATIC.py": "859bea73b9cae5ed90ec4d5931abf33846a2787c742b596377ff8b8739bb9241",
+    "models/PULSE_SCF.py": "b752a0d16157ea793556736e5680f3dbc84eaa6cc8a071de82e3cb67bf291a7f",
+    "models/PULSE_SCF_SIMPLE.py": "dd5feee3d096e7042f336a4ae3e7781342933ff050c4ba4013c7d6c962fae71b",
+    "models/PULSE_SOFTS.py": "618ae9ea85959e5fbc593e73215c109e80b4cd953dea99bd4305d8e930c9d128",
+    "models/PatchTST.py": "0f5c63dfe0b767edba79cbb5e97eb07375cb021d2a01d53e44e86163227e9928",
+    "models/TimeXer.py": "c98bce78b9bd3370f77f712c0a4efc301ed3f4fd817cc58259ad0c51b2d90f71",
+    "models/TimesNet.py": "ea118385bb8c87b7b344c92679f1a85ac540b9ee764200d41d1ccfa641353eef",
+    "models/iTransformer.py": "46208f1030dd610795a390a9c63940b88d8588902ee81ce0d9d7de07a1a9efd4"
+  },
+  "run_py_sha256": "882b6177862509f60640bd0e2ca902717783ddab5d0242b74f12856472ff7e09",
+  "existing_artifact_identity_check": {
+    "files": 271,
+    "method": "Same paths, size and mtime_ns as before task",
+    "unchanged": true
+  },
+  "raw_h5_identity_unchanged": true,
+  "exp_original_ast_unchanged_after_removing_only_new_model_hooks": true,
+  "formal_bridge_training": "not run",
+  "paper_contribution": "not yet experimentally validated"
+}

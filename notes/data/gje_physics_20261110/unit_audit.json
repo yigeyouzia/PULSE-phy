@@ -1,0 +1,605 @@
+{
+  "schema_version": 1,
+  "official_url": "https://zenodo.org/records/5979695/files/data_2Hz.h5?download=1",
+  "official_size_bytes": 542863860,
+  "published_official_md5": "9f9e25d26998afc023e77ca9980c2fab",
+  "full_official_md5_verified": false,
+  "local_file": "/Users/cyt/projects/i/bridge/PatchTST_self_supervised/data/datasets/public/BRIDGE/gjemnessund.h5",
+  "local_size_bytes": 2563619028,
+  "local_mtime_ns": 1764210984219964800,
+  "verified_acceleration_unit": "g",
+  "standard_gravity_m_s2": 9.80665,
+  "scope": "Selected complete record acceleration arrays; not all records.",
+  "official_root_attributes": {
+    "coordinate_system": "Origin at midspan of the bridge, on deck; X tangential to bridge (positive in N direction); Y normal to bridge (positive in W direction); Z vertical (positive upwards).",
+    "description": "Gjemnessund Bridge monitoring campaign",
+    "geographic_location": "Gjemnes, Møre og Romsdal, Norway",
+    "latitude": "62.97136875847526",
+    "longitude": "7.779379381660226",
+    "project_leader": "Professor Ole Øiseth <ole.oiseth@ntnu.no>",
+    "samplerate": "2Hz (downsampled from 200 Hz)",
+    "structure_name": "Gjemnessund Bridge",
+    "structure_type": "Suspension bridge"
+  },
+  "records": [
+    {
+      "official_id": "NTNU-134-2013-11-27_10-06-12",
+      "local_id": "NTNU_134_2013_11_27_10_06_12",
+      "official_attributes": {
+        "duration": "1809.99",
+        "name": "NTNU-134-2013-11-27_10-06-12",
+        "samplerate": "2",
+        "starttime": "134-2013-11-27T10:06:12",
+        "title": "CUSP M data file"
+      },
+      "channels": [
+        {
+          "column": "accelerationG5 eastx",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 1.734723475976807e-18,
+          "matched": true,
+          "official_sha256": "fdca15caf6ed62e09edc2769a41919c8fd792d6a1dd66c2ceee6daba0e13ede6",
+          "local_sha256": "7e798129f070d19b5cdfa1b8f11bb8880afaa0fb8ac1892b3b52da0a40b4923e",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.005365369260418169",
+            "std": "0.0007485491296557194",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 easty",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 3.469446951953614e-18,
+          "matched": true,
+          "official_sha256": "7654e0957fa285075055be3a8299338c9384c7348add39c5ca66c142f3894c04",
+          "local_sha256": "428de0a913a822dd0b48924fdf1950fc0629072cdfccb115f0639131ba2ce033",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.011857823137900902",
+            "std": "0.002802245438161304",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 eastz",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 3.469446951953614e-18,
+          "matched": true,
+          "official_sha256": "155f67499a425b6c6bc804bc3e3d54e9e1ea2b24f149a48a9a0e0ebd39a4485f",
+          "local_sha256": "f84d527b6ec3bb6ae69dd9be992c64a87be6f5285de28be54683eb7346a2366e",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "0.004539626399041741",
+            "std": "0.005800234082191586",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westx",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 2.6020852139652106e-18,
+          "matched": true,
+          "official_sha256": "a5b7c45d754b111dc160b11d00f3a5f83c0792fe1d415c3ef2dc3972ce949ed7",
+          "local_sha256": "777b577d94020d89c1ba04e1bc41447acafa72f38684bb4372a9935def38ff7a",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.007507388556194676",
+            "std": "0.0007132012354326695",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westy",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "d160c1ac87c781a5b7a355d9c15f4bdd4b43bbf2747e820504e6258f50eae0f0",
+          "local_sha256": "84e112016b5120a4f69df312d2dc1fcad8122257ce8c68387eccf5ad2856d209",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.017058412486680063",
+            "std": "0.00281597033125941",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westz",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "9c04a2de692346286c7e14dc0061d61c271f30a224e8a41df39b7589a3946068",
+          "local_sha256": "a067e2bfda19ce37c9b6200301fb7d4a1e0c1178fe7a2cfaa68adfb695585421",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "0.017914018424061075",
+            "std": "0.005795650814549122",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        }
+      ],
+      "wind_sensor_attributes": {
+        "channel": "3",
+        "internal_samplerate": "32",
+        "location": "attached to hanger",
+        "position": "[[-269    5    3]]",
+        "samplerate": "2",
+        "transformation_matrix": "[[-1  0  0]\n [ 0 -1  0]\n [ 0  0  1]]",
+        "type": "Windmaster Pro wind sensor"
+      },
+      "wind_components": {
+        "T": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "16.338166582063103",
+          "std": "1.426243999695187",
+          "unit": "degC"
+        },
+        "U": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "13.03222974348721",
+          "std": "2.8332443609288416",
+          "unit": "m/s"
+        },
+        "angle": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "43.45118360833769",
+          "std": "12.294151148137155",
+          "unit": "deg"
+        },
+        "w": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "-0.1000600866566452",
+          "std": "0.8039625094148688",
+          "unit": "m/s"
+        }
+      }
+    },
+    {
+      "official_id": "NTNU-134-2013-11-28_00-10-26",
+      "local_id": "NTNU_134_2013_11_28_00_10_26",
+      "official_attributes": {
+        "duration": "1809.99",
+        "name": "NTNU-134-2013-11-28_00-10-26",
+        "samplerate": "2",
+        "starttime": "134-2013-11-28T00:10:26",
+        "title": "CUSP M data file"
+      },
+      "channels": [
+        {
+          "column": "accelerationG5 eastx",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 1.734723475976807e-18,
+          "matched": true,
+          "official_sha256": "96688a3f0fbcf499892385a69fa45d960f2ae71cfb137f3e49f54fef8ba18b97",
+          "local_sha256": "d8e4b383d107f2fa9838862aaf9bedf62260d8f84643416f6c619fc51bbc0c75",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.008556831682162053",
+            "std": "0.001642190047444619",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 easty",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "5a9b4e0fb0c3539350473ae3bf0a3ff5303042fa0a4803a1e98be50b4c7b1a20",
+          "local_sha256": "54b5d984a8950dba0b1ab3e948c38d16160bd4c826e5a704b67450b01ed6394a",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.013272135760412113",
+            "std": "0.00634877005659666",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 eastz",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "f4f3c2a5c2c58d44e49e0f8c0624c0e3530e5dd3961a6a3e2a9e4d1c203623d4",
+          "local_sha256": "4f30a0521194fca743f38e384f39deec2f43345c2844d8943bd9dc87fff1db76",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "0.006400502448639319",
+            "std": "0.012717358198065415",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westx",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 2.6020852139652106e-18,
+          "matched": true,
+          "official_sha256": "b8a932889f9c2067328918e8ec20c134596b48dba206901631c71d051452e8d3",
+          "local_sha256": "936a1c5bd99bc304bd96da5c039759459501edadf74c3c0d73d1b9645c3529a3",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.008965577908642702",
+            "std": "0.0016444101465930274",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westy",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "e78ee2254f6bd8f2b8e58adabf011d7af50e5df15e292072bc93b247cab85517",
+          "local_sha256": "874baaf19e398d3ffd78df0f201e12c1261c406b5ca7a65d1fb3cbcabd4228b4",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.017935528508329295",
+            "std": "0.0063206857163457105",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westz",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 1.3877787807814457e-17,
+          "matched": true,
+          "official_sha256": "15938f93d5b91abaf1e6a88472e1a24c29e572de57daece03157b021c66f2caf",
+          "local_sha256": "4d99b1dc61ad5c43dec3c97bcfa45393cb5e79fc1b5ab89e2024dc19d5e4577c",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "0.020890022089868305",
+            "std": "0.01262013933233767",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        }
+      ],
+      "wind_sensor_attributes": {
+        "channel": "3",
+        "internal_samplerate": "32",
+        "location": "attached to hanger",
+        "position": "[[-269    5    3]]",
+        "samplerate": "2",
+        "transformation_matrix": "[[-1  0  0]\n [ 0 -1  0]\n [ 0  0  1]]",
+        "type": "Windmaster Pro wind sensor"
+      },
+      "wind_components": {
+        "T": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "10.941569497702705",
+          "std": "0.6646099042712311",
+          "unit": "degC"
+        },
+        "U": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "21.339550366270714",
+          "std": "3.770609769126951",
+          "unit": "m/s"
+        },
+        "angle": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "58.8151194261012",
+          "std": "7.335355566765058",
+          "unit": "deg"
+        },
+        "w": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "-0.12671432391705528",
+          "std": "0.6685008974074623",
+          "unit": "m/s"
+        }
+      }
+    },
+    {
+      "official_id": "NTNU-134-2013-11-30_21-06-58",
+      "local_id": "NTNU_134_2013_11_30_21_06_58",
+      "official_attributes": {
+        "duration": "1809.99",
+        "name": "NTNU-134-2013-11-30_21-06-58",
+        "samplerate": "2",
+        "starttime": "134-2013-11-30T21:06:58",
+        "title": "CUSP M data file"
+      },
+      "channels": [
+        {
+          "column": "accelerationG5 eastx",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 2.6020852139652106e-18,
+          "matched": true,
+          "official_sha256": "5bda3d467bd8df66218b141de43108154c842f296e27f33cd9092d181ba80545",
+          "local_sha256": "248e0b1ad609328ad4c9f3e90260a6568a2a7cd9efa01bff8125928f5b377631",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.008108037903423992",
+            "std": "0.0014599705072543747",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 easty",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "e5431566c286382ac09f599fc09728a4e6e5ffcda8e8c1a9d20ef91b9ebdcf45",
+          "local_sha256": "c926dc079e275e48122f9f74cef5d704eb53731b203fd27aa2dba2fd6e493293",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.013674074852846512",
+            "std": "0.0031019404528190835",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 eastz",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "c5dad354bac2db9cb91c98c7bf4d1cd0dca9fcad290e53293c3c3579aacbd1ad",
+          "local_sha256": "4721c65a8287718a40b8a6d34fac8e969798c3a72f92412ae28d8a0975d3a867",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "0.006290989491012425",
+            "std": "0.0060562472839772695",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "1",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.     4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westx",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 1.734723475976807e-18,
+          "matched": true,
+          "official_sha256": "ebf63eb49c334e7b39abb11d682e8b933049cf39b0d79e05bf5e96b411fa603e",
+          "local_sha256": "5c182fc568875e5f8016deeb4c00bad5b66559be2f65b65c0721d89e42375310",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.009066247063619089",
+            "std": "0.0007108663362145398",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westy",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "67e8c5a5a13d4a525939380f8d4e324966ddcb7fe5bd317874331ea43edeb6e8",
+          "local_sha256": "7fdf91f489f7b639c295522d72c05fb3cb4d572d446422c8ba7d3fb4ea76230c",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "-0.018439537153453634",
+            "std": "0.0029055766913942756",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        },
+        {
+          "column": "accelerationG5 westz",
+          "unit": "g",
+          "rows": 3620,
+          "max_abs_difference": 6.938893903907228e-18,
+          "matched": true,
+          "official_sha256": "5044c7ba76099b12a47d500a36d215925217f14ad8da10bb7dc345cd48014464",
+          "local_sha256": "7be8a1bb7fc126df8775aea2a0c0fa7685983c465587f5573c8f76d8f4bdac17",
+          "official_attributes": {
+            "data_quality": "acceptable (value > 5 std detected)",
+            "mean": "0.020225790567689615",
+            "std": "0.006068967090600534",
+            "unit": "g"
+          },
+          "sensor_attributes": {
+            "channel": "2",
+            "internal_samplerate": "200",
+            "location": "inside bridge deck",
+            "position": "[[-269.    -4.5    0. ]]",
+            "samplerate": "2",
+            "transformation_matrix": "[[1 0 0]\n [0 1 0]\n [0 0 1]]",
+            "type": "'D' resolution triaxial accelerometer"
+          }
+        }
+      ],
+      "wind_sensor_attributes": {
+        "channel": "3",
+        "internal_samplerate": "32",
+        "location": "attached to hanger",
+        "position": "[[-269    5    3]]",
+        "samplerate": "2",
+        "transformation_matrix": "[[-1  0  0]\n [ 0 -1  0]\n [ 0  0  1]]",
+        "type": "Windmaster Pro wind sensor"
+      },
+      "wind_components": {
+        "T": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "14.34463190904445",
+          "std": "0.7578336103576196",
+          "unit": "degC"
+        },
+        "U": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "14.678316106344882",
+          "std": "2.6790530396483065",
+          "unit": "m/s"
+        },
+        "angle": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "47.397374739418254",
+          "std": "11.618236636359978",
+          "unit": "deg"
+        },
+        "w": {
+          "data_quality": "acceptable (exceeds limits)",
+          "mean": "-0.05403719615518156",
+          "std": "0.6747985644976782",
+          "unit": "m/s"
+        }
+      }
+    }
+  ],
+  "http_requests": 6,
+  "http_bytes": 6291456,
+  "reused_or_downloaded_blocks": 7
+}

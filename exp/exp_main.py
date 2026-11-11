@@ -4,6 +4,7 @@ from exp.exp_basic import Exp_Basic
 from models import Autoformer, DLinear, PatchTST,iTransformer,CycleNet,TimeXer,TimesNet,PULSE
 from models import PULSE_SOFTS, PULSE_SCF_SIMPLE, PULSE_SCF
 from models import PULSE_FACT
+from models import PULSE_FACT_MODAL, PULSE_FACT_OSC
 from models import PULSE_FACT_PC, PULSE_FACT_STATIC
 from utils.polynomial import (chebyshev_torch, hermite_torch, laguerre_torch,
                               leg_torch)
@@ -53,6 +54,8 @@ class Exp_Main(Exp_Basic):
             'PatchTST': PatchTST,
             'PULSE': PULSE,
             'PULSE_FACT': PULSE_FACT,
+            'PULSE_FACT_MODAL': PULSE_FACT_MODAL,
+            'PULSE_FACT_OSC': PULSE_FACT_OSC,
             'PULSE_FACT_PC': PULSE_FACT_PC,
             'PULSE_FACT_STATIC': PULSE_FACT_STATIC,
             'PULSE_SOFTS': PULSE_SOFTS,
@@ -71,6 +74,9 @@ class Exp_Main(Exp_Basic):
 
     def _get_data(self, flag):
         data_set, data_loader = data_provider(self.args, flag)
+        if self.args.model in ('PULSE_FACT_MODAL', 'PULSE_FACT_OSC'):
+            # New-model calibration only: reuse, never refit, TRAIN statistics.
+            self.model.bind_gje_protocol(data_set.info)
         return data_set, data_loader
 
     def _select_optimizer(self):
@@ -494,7 +500,7 @@ class Exp_Main(Exp_Basic):
                     loss='Original non-AMP SAM target mixing + configured rec/FFT loss',
                     scheduler='Original OneCycleLR construction + original lradj behavior',
                     test_policy='No test-set evaluation/selection during training')
-        if self.args.model in ('PULSE_SCF', 'PULSE_FACT'):
+        if self.args.model in ('PULSE_SCF', 'PULSE_FACT', 'PULSE_FACT_MODAL', 'PULSE_FACT_OSC'):
             from utils.gje_model_support import gje_extended_model_provenance
             info.update(gje_extended_model_provenance(self.args.model, self.model))
         (Path(path) / 'gje_run.json').write_text(json.dumps(info, indent=2), encoding='utf-8')

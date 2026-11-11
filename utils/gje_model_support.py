@@ -8,12 +8,13 @@ import hashlib
 from pathlib import Path
 
 
-GJE_SUPPORTED_MODELS = ('PULSE', 'PULSE_SCF', 'PULSE_FACT')
+GJE_SUPPORTED_MODELS = ('PULSE', 'PULSE_SCF', 'PULSE_FACT',
+                        'PULSE_FACT_MODAL', 'PULSE_FACT_OSC')
 
 
 def gje_extended_model_provenance(model_name, model):
     """Describe an already-built extended model without changing its state."""
-    if model_name not in ('PULSE_SCF', 'PULSE_FACT'):
+    if model_name not in ('PULSE_SCF', 'PULSE_FACT', 'PULSE_FACT_MODAL', 'PULSE_FACT_OSC'):
         raise ValueError('No extended Gje provenance for ' + model_name)
 
     root = Path(__file__).resolve().parents[1]
@@ -31,10 +32,14 @@ def gje_extended_model_provenance(model_name, model):
                  for path in (root / 'layers' / namespace).rglob('*.py'))
     if model_name == 'PULSE_SCF':
         files.add('models/PULSE.py')  # Inherited norm/SAM/Router/denorm.
+    if model_name in ('PULSE_FACT_MODAL', 'PULSE_FACT_OSC'):
+        files.add('models/PULSE_FACT.py')  # Retained source of expanded main files.
+        files.update(str(path.relative_to(root))
+                     for path in (root / 'layers' / 'gje_physics').rglob('*.py'))
 
     hashes = {name: hashlib.sha256((root / name).read_bytes()).hexdigest()
               for name in sorted(files)}
-    return {
+    result = {
         'gje_model_provenance_version': 1,
         'model_name': model_name,
         'model_file': main_file,
@@ -42,3 +47,7 @@ def gje_extended_model_provenance(model_name, model):
         'source_sha256': hashes,
         'effective_model_settings': model.get_extra_state(),
     }
+    if model_name in ('PULSE_FACT_MODAL', 'PULSE_FACT_OSC'):
+        result['gje_physics_calibration'] = model.acceleration_units.get_extra_state()
+        result['gje_physics_unit_audit'] = 'notes/data/gje_physics_20261110/unit_audit.json'
+    return result

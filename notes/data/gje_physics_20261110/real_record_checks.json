@@ -1,0 +1,104 @@
+{
+  "purpose": "Real-record interface/calibration/gradient sanity only, NOT trained benchmark scores",
+  "raw_file": "/Users/cyt/projects/i/bridge/PatchTST_self_supervised/data/datasets/public/BRIDGE/gjemnessund.h5",
+  "cache_and_all_outputs": "Temporary directory, removed after check",
+  "device": "cpu",
+  "checks": [
+    {
+      "model": "PULSE_FACT_MODAL",
+      "horizon": 96,
+      "shape": [
+        2,
+        96,
+        10
+      ],
+      "finite_forward_backward_eval": true,
+      "record": "NTNU_134_2013_11_27_10_06_12",
+      "training_scaler_rows": 1810
+    },
+    {
+      "model": "PULSE_FACT_OSC",
+      "horizon": 96,
+      "shape": [
+        2,
+        96,
+        10
+      ],
+      "finite_forward_backward_eval": true,
+      "record": "NTNU_134_2013_11_27_10_06_12",
+      "training_scaler_rows": 1810
+    },
+    {
+      "model": "PULSE_FACT_MODAL",
+      "horizon": 192,
+      "shape": [
+        2,
+        192,
+        10
+      ],
+      "finite_forward_backward_eval": true,
+      "record": "NTNU_134_2013_11_27_10_06_12",
+      "training_scaler_rows": 1810
+    },
+    {
+      "model": "PULSE_FACT_OSC",
+      "horizon": 192,
+      "shape": [
+        2,
+        192,
+        10
+      ],
+      "finite_forward_backward_eval": true,
+      "record": "NTNU_134_2013_11_27_10_06_12",
+      "training_scaler_rows": 1810
+    },
+    {
+      "model": "PULSE_FACT_MODAL",
+      "horizon": 336,
+      "shape": [
+        2,
+        336,
+        10
+      ],
+      "finite_forward_backward_eval": true,
+      "record": "NTNU_134_2013_11_27_10_06_12",
+      "training_scaler_rows": 1810
+    },
+    {
+      "model": "PULSE_FACT_OSC",
+      "horizon": 336,
+      "shape": [
+        2,
+        336,
+        10
+      ],
+      "finite_forward_backward_eval": true,
+      "record": "NTNU_134_2013_11_27_10_06_12",
+      "training_scaler_rows": 1810
+    },
+    {
+      "model": "PULSE_FACT_MODAL",
+      "horizon": 720,
+      "shape": [
+        2,
+        720,
+        10
+      ],
+      "finite_forward_backward_eval": true,
+      "record": "NTNU_134_2013_11_27_10_06_12",
+      "training_scaler_rows": 1810
+    },
+    {
+      "model": "PULSE_FACT_OSC",
+      "horizon": 720,
+      "shape": [
+        2,
+        720,
+        10
+      ],
+      "finite_forward_backward_eval": true,
+      "record": "NTNU_134_2013_11_27_10_06_12",
+      "training_scaler_rows": 1810
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "code_start": "a9f8e287c5dffc4b5d5440d711225ab58e713b1c",
+  "date": "2026-11-10",
+  "sources": {
+    "models/PULSE_FACT.py": "4f31942eb91380f1f473952bb8c50152f0d041f9ba9ab542bafa4acfd55e9857",
+    "models/PULSE.py": "764964d5c0adb4d62c743800f3c0e85237ff7b9ef89192370d81beadb2f612b8",
+    "scripts/PULSE_FACT/Gjemnessund.sh": "d06195182c1bb88c534a598a9ae6f4ae9bb9ef0064cfe8cb6929e2672b00b25d"
+  },
+  "changes": [
+    "Full main-model copy in two independent files; inherited algorithms retained visibly.",
+    "Modal SI harmonic residual or stable nominal forced acceleration decoder appended after denorm.",
+    "Physical branches share original SAM lam/index.",
+    "New layer code is original implementation, not copied from a third-party physics repository.",
+    "FACT source/license provenance retained in layers/pulse_fact/vendor/sources.json."
+  ],
+  "reference_sources_changed": false
+}

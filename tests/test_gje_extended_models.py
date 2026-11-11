@@ -59,7 +59,8 @@ class GjeExtendedModelTests(unittest.TestCase):
             args = SimpleNamespace(**dict(valid, **overrides))
             exec(code, {'args': args, 'parser': argparse.ArgumentParser()})
 
-        self.assertEqual(GJE_SUPPORTED_MODELS, ('PULSE', 'PULSE_SCF', 'PULSE_FACT'))
+        self.assertEqual(GJE_SUPPORTED_MODELS[:3], ('PULSE', 'PULSE_SCF', 'PULSE_FACT'))
+        self.assertEqual(GJE_SUPPORTED_MODELS[3:], ('PULSE_FACT_MODAL', 'PULSE_FACT_OSC'))
         for name in GJE_SUPPORTED_MODELS:
             check(model=name)
             for bad in ({'time_dim': 1}, {'features': 'MS'}, {'enc_in': 6},
