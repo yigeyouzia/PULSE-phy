@@ -24,8 +24,12 @@ import test_pulse_fact as source_tests
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCOPES = {"PEMS03": (12, 24, 48, 96), "PEMS04": (12, 24, 48, 96),
-          "ETTh1": (96, 192, 336, 720)}
+SCOPES = {"PEMS04": (12, 24, 48, 96), "PEMS03": (12, 24, 48, 96),
+          "PEMS07": (12, 24, 48, 96), "PEMS08": (12, 24, 48, 96),
+          "ETTh1": (96, 192, 336, 720), "ETTh2": (96, 192, 336, 720),
+          "ETTm1": (96, 192, 336, 720), "ETTm2": (96, 192, 336, 720),
+          "electricity": (96, 192, 336, 720), "traffic": (96, 192, 336, 720),
+          "Weather": (96, 192, 336, 720), "Solar": (96, 192, 336, 720)}
 
 
 def config(**changes):
@@ -283,7 +287,7 @@ class BDIScriptTests(unittest.TestCase):
     def setUpClass(cls):
         torch.set_num_threads(2)
 
-    def test_twelve_configs_preserve_reference_parameters_and_shapes(self):
+    def test_forty_eight_configs_preserve_reference_parameters_and_shapes(self):
         helper = source_tests.PULSEFACTScriptTests()
         parser = helper.fact_parser()
         for dataset, horizons in SCOPES.items():
@@ -309,7 +313,8 @@ class BDIScriptTests(unittest.TestCase):
                         self.assertEqual(getattr(new, key), getattr(old, key), (dataset, key))
                     self.assertEqual(new.model, "PULSE_FACT_BDI")
                     self.assertEqual(new.checkpoints, "./checkpoints/PULSE_FACT_BDI/")
-                    log = Path(after) / "logs/PULSE_FACT_BDI" / dataset / ("PULSE_FACT_BDI_96_%d.log" % new.pred_len)
+                    directory_name = old.model_id.split("_")[2]
+                    log = Path(after) / "logs/PULSE_FACT_BDI" / directory_name / ("PULSE_FACT_BDI_96_%d.log" % new.pred_len)
                     expected.append(log.resolve())
                     self.assertEqual(log.read_text(), "stdout\nstderr\n")
                     model = make(new).eval()
@@ -318,6 +323,28 @@ class BDIScriptTests(unittest.TestCase):
                     self.assertEqual(prediction.shape, (1, new.pred_len, new.enc_in))
                     self.assertTrue(torch.isfinite(prediction).all())
                 self.assertEqual(reported, expected)
+
+    def test_runall_covers_all_datasets_in_order_and_stops_on_failure(self):
+        helper = source_tests.PULSEFACTScriptTests()
+        parser = helper.fact_parser()
+        launcher = ROOT / "scripts/run_PULSE_FACT_BDI.sh"
+        subprocess.run(["bash", "-n", str(launcher)], check=True)
+        expected_paths = ["scripts/PULSE_FACT_BDI/" + name + ".sh" for name in SCOPES]
+        calls = [line[5:] for line in launcher.read_text().splitlines() if line.startswith("bash ")]
+        self.assertEqual(calls, expected_paths)
+        for status in (0, 37):
+            with tempfile.TemporaryDirectory() as directory:
+                (Path(directory) / "scripts").symlink_to(ROOT / "scripts", target_is_directory=True)
+                result, commands = helper.fact_capture(launcher, directory, exit_code=status)
+                self.assertEqual(result.returncode, status, result.stderr)
+                self.assertEqual(len(commands), 48 if status == 0 else 1)
+                if status == 0:
+                    actual = [parser.parse_args(c[2:]) for c in commands]
+                    self.assertEqual({a.model for a in actual}, {"PULSE_FACT_BDI"})
+                    self.assertEqual([a.data_path for a in actual[::4]],
+                                     ["PEMS04.npz", "PEMS03.npz", "PEMS07.npz", "PEMS08.npz",
+                                      "ETTh1.csv", "ETTh2.csv", "ETTm1.csv", "ETTm2.csv",
+                                      "electricity.csv", "traffic.csv", "weather.csv", "solar_AL.txt"])
 
     def test_failure_stops_and_repeated_logs_overwrite_with_distinct_checkpoint_ids(self):
         helper = source_tests.PULSEFACTScriptTests()

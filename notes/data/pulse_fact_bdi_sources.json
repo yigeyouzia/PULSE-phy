@@ -62,6 +62,78 @@
       "commit": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
       "working_tree_matches_head": true,
       "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/ETTh2.sh",
+      "sha256": "36b23384edfe337b99e29ee7649d68c5a4e87327527b852a34deff0f51c00dfc",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/ETTh2.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/ETTm1.sh",
+      "sha256": "6e8dfc3842077a98a124ce68517f20303ace7d73336a96852091153fb107cea9",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/ETTm1.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/ETTm2.sh",
+      "sha256": "ca08620ed8fa75e61fbf750e18d30b7fad6dd96721de1ea407c059d04741e251",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/ETTm2.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/electricity.sh",
+      "sha256": "34e0fd1143c5a980808f36adedaca20909c1b05b31bc741f34dbfc5b0acee0c3",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/electricity.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/traffic.sh",
+      "sha256": "bea539c7f64299438fb1ba12f9781a5f868cef9bac8e15d31bec299b478c367b",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/traffic.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/Weather.sh",
+      "sha256": "dbb232d65218c26a85d531a3f50bcf225807402f7cfe02aea6608837e5f11ad2",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/Weather.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/Solar.sh",
+      "sha256": "d47bda74cb648314cbfe203796d3d3a3466fb247c43c482966bbdbf12825b7b0",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/Solar.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/PEMS07.sh",
+      "sha256": "96c475c188bc30b9e1f20d1c6bb308abe5d83a2dc6b1ccfd7808626de440715d",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/PEMS07.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/PEMS08.sh",
+      "sha256": "43f0532f5c28a4550f4749c068662f5b16f009cb0f15b47e7832da0b3f8c82a3",
+      "changes_in_bdi": "Copied to scripts/PULSE_FACT_BDI/PEMS08.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
     }
   ],
   "protected_files": [
@@ -375,5 +447,12 @@
     "ReVIN",
     "Model.phase_router",
     "Model.denorm"
-  ]
+  ],
+  "script_completion": {
+    "date": "2026-11-12",
+    "head_at_start": "a02dfec5c398b7cc0f86dcccce3430bd8d199d76",
+    "datasets": 12,
+    "commands": 48,
+    "launcher": "scripts/run_PULSE_FACT_BDI.sh"
+  }
 }

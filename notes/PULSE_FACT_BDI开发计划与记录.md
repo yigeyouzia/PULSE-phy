@@ -181,3 +181,34 @@ PULSE-phy/
 ```
 
 花括号是文件名范围示意，实际每个 H 对应一个独立日志。原实验类独立 is_training=0 的旧路径限制仍存在，本次脚本使用 is_training=1 的训练后自动测试，不改写旧加载分支。
+
+## 8. 全数据集脚本补齐计划（2026-11-12）
+
+用户要求补齐缺失 BDI 脚本并提供统一 runall。本轮沿用已有十二个标准数据集，不扩展 Gjemnessund；模型、层、训练入口、环境与原三份 BDI 脚本保持原样。第 5 节的三数据集范围为首轮历史记录，本节扩展脚本覆盖，不代表新增训练已经完成。
+
+拟新增九份 `scripts/PULSE_FACT_BDI/` 脚本：`ETTh2.sh`、`ETTm1.sh`、`ETTm2.sh`、`electricity.sh`、`traffic.sh`、`Weather.sh`、`Solar.sh`、`PEMS07.sh`、`PEMS08.sh`。逐份复制 `scripts/PULSE_FACT/` 对应文件，只修改模型标识和来源注释；完整保留四个预测长度的参考训练参数。
+
+| 脚本／目录标识 | H | 预计日志文件名 |
+| --- | --- | --- |
+| ETTh1、ETTh2、ETTm1、ETTm2 | 96、192、336、720 | `PULSE_FACT_BDI_96_<H>.log` |
+| electricity.sh／Electricity、traffic.sh／traffic | 96、192、336、720 | 同上 |
+| Weather.sh／weather、Solar.sh／Solar | 96、192、336、720 | 同上 |
+| PEMS03、PEMS04、PEMS07、PEMS08 | 12、24、48、96 | 同上 |
+
+实际目录标识以对应脚本的 model_id_name 为准。日志为 `logs/PULSE_FACT_BDI/<目录标识>/PULSE_FACT_BDI_96_<H>.log`；checkpoint 根目录为 `checkpoints/PULSE_FACT_BDI/`，沿用既有 setting 分类。
+
+统一启动清单命名为 `scripts/run_PULSE_FACT_BDI.sh`，与仓库其他模型启动脚本一致。只使用 `set -e` 与逐行 bash 调用，无函数、循环、并发或重复训练命令。顺序为 PEMS04 → PEMS03 → PEMS07 → PEMS08 → ETTh1 → ETTh2 → ETTm1 → ETTm2 → Electricity → traffic → weather → Solar，优先交通数据。
+
+从工程根目录执行：
+
+```bash
+bash scripts/run_PULSE_FACT_BDI.sh
+```
+
+总计十二份基础脚本、四十八组训练调用。任一训练失败立即停止；重新执行会从首个数据集开始，并覆盖固定路径的日志，需要保留旧日志时先手工归档。
+
+已检查九份新增脚本与三份已有脚本的 shell 语法、实际参数、输入输出形状、日志及 checkpoint 路径，并验证 runall 覆盖四十八组且失败即停。检查使用临时目录和替身命令，没有启动正式训练或改动现有日志。
+
+本轮检查环境为 Python 3.8.20／PyTorch 2.0.0 CPU，完整 BDI 检查共 16 项：15 项通过、1 项 CUDA 检查因本机无 CUDA 跳过。48 组配置全部完成随机输入前向和有限值检查，原参数保持一致；批量清单的完整顺序、失败即停、固定日志覆盖及独立 checkpoint 标识检查通过。来源记录已补充九份 PF 参考脚本的哈希及提交版本。
+
+起点保护快照中的 170 个既有模型、层、入口和脚本文件均未发生变化，原三份 BDI 脚本保持原样；用户原有修改及未跟踪产物保持原样。此次只提交新增脚本、启动清单、相关检查与开发记录。全部新增实验指标仍为待运行。
