@@ -5,6 +5,7 @@ from models import Autoformer, DLinear, PatchTST,iTransformer,CycleNet,TimeXer,T
 from models import PULSE_SOFTS, PULSE_SCF_SIMPLE, PULSE_SCF
 from models import PULSE_FACT
 from models import PULSE_FACT_MP
+from models import PULSE_FACT_BDI
 from models import PULSE_FACT_MODAL, PULSE_FACT_OSC
 from models import PULSE_FACT_PC, PULSE_FACT_STATIC
 from utils.polynomial import (chebyshev_torch, hermite_torch, laguerre_torch,
@@ -56,6 +57,7 @@ class Exp_Main(Exp_Basic):
             'PULSE': PULSE,
             'PULSE_FACT': PULSE_FACT,
             'PULSE_FACT_MP': PULSE_FACT_MP,
+            'PULSE_FACT_BDI': PULSE_FACT_BDI,
             'PULSE_FACT_MODAL': PULSE_FACT_MODAL,
             'PULSE_FACT_OSC': PULSE_FACT_OSC,
             'PULSE_FACT_PC': PULSE_FACT_PC,

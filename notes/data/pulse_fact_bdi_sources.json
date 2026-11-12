@@ -1,0 +1,379 @@
+{
+  "created": "2026-11-12",
+  "head_at_start": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
+  "git_sources": {
+    "repository": "https://github.com/yigeyouzia/PULSE-phy.git",
+    "commit": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
+    "source_files_match_head": true,
+    "scope": "Referenced PF source and scripts; unrelated pre-existing working-tree changes excluded."
+  },
+  "sources": [
+    {
+      "path": "models/PULSE_FACT.py",
+      "sha256": "4f31942eb91380f1f473952bb8c50152f0d041f9ba9ab542bafa4acfd55e9857",
+      "changes_in_bdi": "Standalone model expanded in models/PULSE_FACT_BDI.py; norm_bdi also returns the historical normalized residual; same SAM pairing for residual; shared encoding; BDI interaction; original restoration unchanged.",
+      "commit": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "layers/pulse_fact/fact_block.py",
+      "sha256": "114e27d8bcb1da583c2cea1f1de6955e7b031cb888cb3904db2df1159b375de1",
+      "changes_in_bdi": "Grid conversion and cyclic padding copied into a separately named three-input interaction adapter.",
+      "commit": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "layers/pulse_fact/vendor/fact_conv.py",
+      "sha256": "12686dabd96bde224f622331a730b45a7afacdcc6d7cbb69cd952f59e1b22ca6",
+      "changes_in_bdi": "Reused as-is via local import; original FACT operators and license remain unchanged.",
+      "commit": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "../FACT-main/models/FACT.py",
+      "sha256": "43e433220a204461b6bb579ef6a4d802be3ac0b8c4eea15c0880cdc393dba831",
+      "changes_in_bdi": "Read-only ZIP source; selected Inception2d and Conv_block2d already vendored; commit unknown.",
+      "runtime_required": false,
+      "source_kind": "ZIP extraction; commit unknown"
+    },
+    {
+      "path": "scripts/PULSE_FACT/PEMS03.sh",
+      "sha256": "04b411a620b2d74bb325eaa89ffb30226c92998360d9db0820056c3302c93594",
+      "changes_in_bdi": "Copy to scripts/PULSE_FACT_BDI/PEMS03.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/PEMS04.sh",
+      "sha256": "d7ac9b86c7a55fcb43d0ba95d8798cdc33fb4f3312f038a3e7359b39ec7207d5",
+      "changes_in_bdi": "Copy to scripts/PULSE_FACT_BDI/PEMS04.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    },
+    {
+      "path": "scripts/PULSE_FACT/ETTh1.sh",
+      "sha256": "fb29a4843be8e858ed58de14bd029d2a8d3b0787a222b9e147df69d4038ceffc",
+      "changes_in_bdi": "Copy to scripts/PULSE_FACT_BDI/ETTh1.sh; only model identity/output roots and provenance comments differ.",
+      "commit": "f2bff2f0b5872dfd4370eb3e7d749b148bbdc539",
+      "working_tree_matches_head": true,
+      "working_tree_diff": ""
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "models/Autoformer.py",
+      "sha256": "69571eb9f31cec3620c3f72b841a3029d8bd6715083c0a54a6d44e6072390378"
+    },
+    {
+      "path": "models/CycleNet.py",
+      "sha256": "936312a38f42c355ebab0a949311892b6fec8d0843905e53df46c1fb252b842d"
+    },
+    {
+      "path": "models/DLinear.py",
+      "sha256": "94a1eec839e6c01ae9b09595c774559b7a69ef198873f2c4b2fb05dd3eed3890"
+    },
+    {
+      "path": "models/FACT.py",
+      "sha256": "43e433220a204461b6bb579ef6a4d802be3ac0b8c4eea15c0880cdc393dba831"
+    },
+    {
+      "path": "models/PULSE.py",
+      "sha256": "764964d5c0adb4d62c743800f3c0e85237ff7b9ef89192370d81beadb2f612b8"
+    },
+    {
+      "path": "models/PULSE_FACT.py",
+      "sha256": "4f31942eb91380f1f473952bb8c50152f0d041f9ba9ab542bafa4acfd55e9857"
+    },
+    {
+      "path": "models/PULSE_FACT_MODAL.py",
+      "sha256": "7b74eaf1fab61c55b228f018b14f22e092d84ad6da29483459d3b16e7d000f30"
+    },
+    {
+      "path": "models/PULSE_FACT_MP.py",
+      "sha256": "f83538c3ce76010de35301eb7ccf60b8cb4af3d6fb7f287c621df9039e6c0dc7"
+    },
+    {
+      "path": "models/PULSE_FACT_OSC.py",
+      "sha256": "1b555e112f0ed74de042a1a6b48e507053d9c1a71a13e45cf9958a447d220b6d"
+    },
+    {
+      "path": "models/PULSE_FACT_PC.py",
+      "sha256": "2e3f6d08b4a26d001dd60f81fe852b4d3f323fbb0ea23b49b9c61e762fcbbc66"
+    },
+    {
+      "path": "models/PULSE_FACT_STATIC.py",
+      "sha256": "859bea73b9cae5ed90ec4d5931abf33846a2787c742b596377ff8b8739bb9241"
+    },
+    {
+      "path": "models/PULSE_SCF.py",
+      "sha256": "b752a0d16157ea793556736e5680f3dbc84eaa6cc8a071de82e3cb67bf291a7f"
+    },
+    {
+      "path": "models/PULSE_SCF_SIMPLE.py",
+      "sha256": "dd5feee3d096e7042f336a4ae3e7781342933ff050c4ba4013c7d6c962fae71b"
+    },
+    {
+      "path": "models/PULSE_SOFTS.py",
+      "sha256": "618ae9ea85959e5fbc593e73215c109e80b4cd953dea99bd4305d8e930c9d128"
+    },
+    {
+      "path": "models/PatchTST.py",
+      "sha256": "0f5c63dfe0b767edba79cbb5e97eb07375cb021d2a01d53e44e86163227e9928"
+    },
+    {
+      "path": "models/TimeXer.py",
+      "sha256": "c98bce78b9bd3370f77f712c0a4efc301ed3f4fd817cc58259ad0c51b2d90f71"
+    },
+    {
+      "path": "models/TimesNet.py",
+      "sha256": "ea118385bb8c87b7b344c92679f1a85ac540b9ee764200d41d1ccfa641353eef"
+    },
+    {
+      "path": "models/iTransformer.py",
+      "sha256": "46208f1030dd610795a390a9c63940b88d8588902ee81ce0d9d7de07a1a9efd4"
+    },
+    {
+      "path": "layers/AutoCorrelation.py",
+      "sha256": "13c2be7df57bf7b83b165ab57f4349627b66d7ceb2cb832287fced75230bf35d"
+    },
+    {
+      "path": "layers/Autoformer_EncDec.py",
+      "sha256": "512a01144804da2a64ade5c1e687b624a0257238da18ea02af0720479ea216e2"
+    },
+    {
+      "path": "layers/Embed.py",
+      "sha256": "711275722c7cebc5c286aee96658fd36f7cd8d7a05cc89db22a1f3b1c2ddf9ef"
+    },
+    {
+      "path": "layers/RevIN.py",
+      "sha256": "1e08d0b3679f4ef79ac7f98a7f719f8d7f8a04595022ed34f702c7d70c0c4d90"
+    },
+    {
+      "path": "layers/SelfAttention_Family.py",
+      "sha256": "0f6914264a4289b1260beb76382e8a75973b542ff6a27ba8482ac7c07678fc80"
+    },
+    {
+      "path": "layers/Transformer_EncDec.py",
+      "sha256": "b543702cf5764d678be8d8a68d878853af022e7b55ce812d941f81b8bc6a68b6"
+    },
+    {
+      "path": "layers/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "layers/gje_physics/__init__.py",
+      "sha256": "637beaa0f93c372343378cc250bf26f7217af06e94305e0abe3299849b6ab651"
+    },
+    {
+      "path": "layers/gje_physics/modal_prior.py",
+      "sha256": "9984461f4f9c6f27d3bcd398476ddb50a52b5bab74b6606450dd1c5031ee83ed"
+    },
+    {
+      "path": "layers/gje_physics/stable_oscillator.py",
+      "sha256": "59f6571865bbe80b298da48c067924e4b86e111ef211be4ae67582b91a6247ce"
+    },
+    {
+      "path": "layers/gje_physics/units.py",
+      "sha256": "249c0bf1117afc8a1331571716ad4a6928f5f4b3776d3a7e00dd5944b25edae6"
+    },
+    {
+      "path": "layers/pulse_fact/__init__.py",
+      "sha256": "10728d9c2ca8cc85f206259694a56fc16c1c0880af649da7227f184bc472a325"
+    },
+    {
+      "path": "layers/pulse_fact/fact_block.py",
+      "sha256": "114e27d8bcb1da583c2cea1f1de6955e7b031cb888cb3904db2df1159b375de1"
+    },
+    {
+      "path": "layers/pulse_fact/vendor/FACT_LICENSE",
+      "sha256": "8a6caa178ea3f33ebff5d7bb5558628cf5b423305dc30d3630f86564c7db94a2"
+    },
+    {
+      "path": "layers/pulse_fact/vendor/__init__.py",
+      "sha256": "fb15e3dbfaee1a6d716d372abcd7106743e30785eed15b5ad01602cd4d40b51a"
+    },
+    {
+      "path": "layers/pulse_fact/vendor/fact_conv.py",
+      "sha256": "12686dabd96bde224f622331a730b45a7afacdcc6d7cbb69cd952f59e1b22ca6"
+    },
+    {
+      "path": "layers/pulse_fact/vendor/sources.json",
+      "sha256": "05f7492d85b31cdcc0d5921fc12a511903a2e1bcd53d918d1ee45e339a31227b"
+    },
+    {
+      "path": "layers/pulse_fact_pc/__init__.py",
+      "sha256": "def31b42300af66cb54abecb278267538a60b3574a7fa5a579b01ef8cc946df1"
+    },
+    {
+      "path": "layers/pulse_fact_pc/interaction.py",
+      "sha256": "6995f4c48d4462bfd165f4f0997da90cb74bdad3648100fc7f0f5418688fdbf3"
+    },
+    {
+      "path": "layers/pulse_fact_pc/phase_condition.py",
+      "sha256": "bd96acda4f17e261a92321f9c8d00b589de718df47425cd604144da034ef0d90"
+    },
+    {
+      "path": "layers/pulse_fact_pc/sources.json",
+      "sha256": "22cd5af7e6d9cbb63c52a70f4184c18acd2775927f6d03195b71ba55b5b44d07"
+    },
+    {
+      "path": "layers/pulse_scf/__init__.py",
+      "sha256": "3b03f09890e2f5cdfc0fd57d4e589b32b7faf78c4bcbd4683f483bbbf0ff1578"
+    },
+    {
+      "path": "layers/pulse_scf/backbone.py",
+      "sha256": "662f256ca7759beb7885996a57117bce18e330d9a31d84cf0bcf4853f623ad8c"
+    },
+    {
+      "path": "layers/pulse_scf/config.py",
+      "sha256": "e4b9df970eaa412266b6d407f2064224ea548efcf89424a303eadf31844c2d47"
+    },
+    {
+      "path": "layers/pulse_scf/deterministic.py",
+      "sha256": "d2d94dd7301625ced1b28dd4460b1ec72eb2025888a027b9d3740cdb4ddd0bf9"
+    },
+    {
+      "path": "layers/pulse_scf/interaction.py",
+      "sha256": "afc2f190a446677de783d2d70fc40aac418bd75361f14a0c54df685b66f7ae82"
+    },
+    {
+      "path": "layers/pulse_scf/vendor/FACT_LICENSE",
+      "sha256": "8a6caa178ea3f33ebff5d7bb5558628cf5b423305dc30d3630f86564c7db94a2"
+    },
+    {
+      "path": "layers/pulse_scf/vendor/SOFTS_LICENSE",
+      "sha256": "02ad41e7363e960b1fa91658d0c21bdebf9ccb9881323606412dd39e79a3a178"
+    },
+    {
+      "path": "layers/pulse_scf/vendor/__init__.py",
+      "sha256": "e2e8c06e42752d6cb613d23866f15d4e799da44c076b3353dac685849f961ed2"
+    },
+    {
+      "path": "layers/pulse_scf/vendor/fact_conv.py",
+      "sha256": "acc2cc4bc5f1d840cdc6b9a10d46a41928e0c36348ecae685244db6def4ace94"
+    },
+    {
+      "path": "layers/pulse_scf/vendor/softs_embedding.py",
+      "sha256": "461a882efd20b5ea83308fb3f5801def62a0da367b1388b300725bcbb8b9dbd7"
+    },
+    {
+      "path": "layers/pulse_scf/vendor/softs_encoder.py",
+      "sha256": "5a408ad6f2d04cbf179edc07b38753ec4098a63cc2c45af3d425fae480cc888d"
+    },
+    {
+      "path": "layers/pulse_scf/vendor/softs_star.py",
+      "sha256": "bcb5c47f6a80a10f526e0a7648a363e196f19bb0dba883701559a75223d8e58f"
+    },
+    {
+      "path": "layers/pulse_scf/vendor/sources.json",
+      "sha256": "01af8e26b0839418398d8962d5adb0b46a77a2690931e692bf7e08752e129abd"
+    },
+    {
+      "path": "data_provider/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "data_provider/data_factory.py",
+      "sha256": "47459e1555617eabb133ce0868bfebd22e2045460bb085bb868512927fdf56f9"
+    },
+    {
+      "path": "data_provider/data_loader.py",
+      "sha256": "68e71ad3fb67fb74cba0b2e4381e69b01001daf4976a142b722429f4c5ce7da9"
+    },
+    {
+      "path": "data_provider/data_loader_gjemnessund.py",
+      "sha256": "777f84ffd046fd6a51f2633200b9f19276565fe7b341b929bddc3f72cea1bde4"
+    },
+    {
+      "path": "scripts/PULSE_FACT/ETTh1.sh",
+      "sha256": "fb29a4843be8e858ed58de14bd029d2a8d3b0787a222b9e147df69d4038ceffc"
+    },
+    {
+      "path": "scripts/PULSE_FACT/ETTh2.sh",
+      "sha256": "36b23384edfe337b99e29ee7649d68c5a4e87327527b852a34deff0f51c00dfc"
+    },
+    {
+      "path": "scripts/PULSE_FACT/ETTm1.sh",
+      "sha256": "6e8dfc3842077a98a124ce68517f20303ace7d73336a96852091153fb107cea9"
+    },
+    {
+      "path": "scripts/PULSE_FACT/ETTm2.sh",
+      "sha256": "ca08620ed8fa75e61fbf750e18d30b7fad6dd96721de1ea407c059d04741e251"
+    },
+    {
+      "path": "scripts/PULSE_FACT/Gjemnessund.sh",
+      "sha256": "d06195182c1bb88c534a598a9ae6f4ae9bb9ef0064cfe8cb6929e2672b00b25d"
+    },
+    {
+      "path": "scripts/PULSE_FACT/PEMS03.sh",
+      "sha256": "04b411a620b2d74bb325eaa89ffb30226c92998360d9db0820056c3302c93594"
+    },
+    {
+      "path": "scripts/PULSE_FACT/PEMS04.sh",
+      "sha256": "d7ac9b86c7a55fcb43d0ba95d8798cdc33fb4f3312f038a3e7359b39ec7207d5"
+    },
+    {
+      "path": "scripts/PULSE_FACT/PEMS07.sh",
+      "sha256": "96c475c188bc30b9e1f20d1c6bb308abe5d83a2dc6b1ccfd7808626de440715d"
+    },
+    {
+      "path": "scripts/PULSE_FACT/PEMS08.sh",
+      "sha256": "43f0532f5c28a4550f4749c068662f5b16f009cb0f15b47e7832da0b3f8c82a3"
+    },
+    {
+      "path": "scripts/PULSE_FACT/Solar.sh",
+      "sha256": "d47bda74cb648314cbfe203796d3d3a3466fb247c43c482966bbdbf12825b7b0"
+    },
+    {
+      "path": "scripts/PULSE_FACT/Weather.sh",
+      "sha256": "dbb232d65218c26a85d531a3f50bcf225807402f7cfe02aea6608837e5f11ad2"
+    },
+    {
+      "path": "scripts/PULSE_FACT/electricity.sh",
+      "sha256": "34e0fd1143c5a980808f36adedaca20909c1b05b31bc741f34dbfc5b0acee0c3"
+    },
+    {
+      "path": "scripts/PULSE_FACT/traffic.sh",
+      "sha256": "bea539c7f64299438fb1ba12f9781a5f868cef9bac8e15d31bec299b478c367b"
+    },
+    {
+      "path": "scripts/PULSE_FACT_MP/ETTh1.sh",
+      "sha256": "079e5903e832bf64004702dfc542b41be444c2586f1936c16469a8137567cd07"
+    },
+    {
+      "path": "scripts/PULSE_FACT_MP/ETTh2.sh",
+      "sha256": "9ede3e311f4a84a4e644f63b301aa91749316d71f72538195b4e23d860c1b4fa"
+    },
+    {
+      "path": "scripts/PULSE_FACT_MP/PEMS04.sh",
+      "sha256": "0fc1ea8b252939181b87bb7b4797105f8cd86f48ba46ba1aa8d00edfde5af02b"
+    },
+    {
+      "path": "run.py",
+      "sha256": "882b6177862509f60640bd0e2ca902717783ddab5d0242b74f12856472ff7e09"
+    }
+  ],
+  "license": "layers/pulse_fact/vendor/FACT_LICENSE",
+  "original_fact_provenance": "layers/pulse_fact/vendor/sources.json",
+  "bdi_defaults": {
+    "hidden_dim": 512,
+    "d_ff": 256,
+    "num_kernels": 2,
+    "dropout": 0.1,
+    "cutoff_ratio_to_nyquist": 0.25,
+    "low_dilation": 2,
+    "high_dilation": 1,
+    "depth": 1
+  },
+  "entry_change": "Only import/registration in exp/exp_main.py; run.py unchanged; no new CLI parameters.",
+  "copied_unchanged_methods": [
+    "ReVIN",
+    "Model.phase_router",
+    "Model.denorm"
+  ]
+}
