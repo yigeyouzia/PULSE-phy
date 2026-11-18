@@ -4,6 +4,7 @@ from exp.exp_basic import Exp_Basic
 from models import Autoformer, DLinear, PatchTST,iTransformer,CycleNet,TimeXer,TimesNet,PULSE
 from models import PULSE_SOFTS, PULSE_SCF_SIMPLE, PULSE_SCF
 from models import PULSE_FACT
+from models import PULSE_FACT_A00, PULSE_FACT_A10, PULSE_FACT_A01
 from models import PULSE_FACT_MP
 from models import PULSE_FACT_BDI
 from models import PULSE_FACT_MODAL, PULSE_FACT_OSC
@@ -29,6 +30,11 @@ import numpy as np
 
 warnings.filterwarnings('ignore')
 
+PEMS_ABLATION_MODELS = {
+    'PULSE_FACT_A00': PULSE_FACT_A00,
+    'PULSE_FACT_A10': PULSE_FACT_A10,
+    'PULSE_FACT_A01': PULSE_FACT_A01,
+}
 
 
 class Exp_Main(Exp_Basic):
@@ -51,6 +57,7 @@ class Exp_Main(Exp_Basic):
 
     def _build_model(self):
         model_dict = {
+            **PEMS_ABLATION_MODELS,
             'Autoformer': Autoformer,
             'DLinear': DLinear,
             'PatchTST': PatchTST,
@@ -319,7 +326,7 @@ class Exp_Main(Exp_Basic):
                 print('Updating learning rate to {}'.format(scheduler.get_last_lr()[0]))
 
         best_model_path = path + '/' + 'checkpoint.pth'
-        if self.args.data == 'Gjemnessund':
+        if self.args.data == 'Gjemnessund' or self.args.model in PEMS_ABLATION_MODELS:
             self.model.load_state_dict(torch.load(best_model_path, map_location=self.device))
         else:
             self.model.load_state_dict(torch.load(best_model_path, map_location=lambda storage, loc: storage.cuda(self.args.gpu)))
